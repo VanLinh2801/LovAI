@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/discoverFragment"
+        android:name="com.example.lovai.Frag.DiscoverFragment"
+        android:label="fragment_discover"
+        tools:layout="@layout/fragment_discover" />
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.lovai.Frag.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" />
+    <fragment
+        android:id="@+id/momentFragment"
+        android:name="com.example.lovai.Frag.MomentFragment"
+        android:label="fragment_moment"
+        tools:layout="@layout/fragment_moment" />
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="com.example.lovai.Frag.SettingFragment"
+        android:label="fragment_setting"
+        tools:layout="@layout/fragment_setting" />
+</navigation>
