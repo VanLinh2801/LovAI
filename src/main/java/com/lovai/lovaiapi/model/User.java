@@ -1,0 +1,52 @@
+// model/User.java
+package com.lovai.lovaiapi.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.JdbcTypeCode;
+
+import com.lovai.lovaiapi.model.enums.Gender;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.UUID;
+
+@Entity @Table(name = "users")
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
+public class User {
+
+    @Id @UuidGenerator
+    @Column(columnDefinition = "uuid")
+    private UUID id;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(name="password_hash", nullable = false)
+    private String passwordHash;
+
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "gender_enum")
+    private Gender gender;
+
+    @Column(name="date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name="settings_json", columnDefinition = "jsonb", nullable = false)
+    private Map<String, Object> settingsJson;
+
+    @Column(name="created_at", insertable=false, updatable=false)
+    private OffsetDateTime createdAt;
+
+    @Column(name="updated_at", insertable=false, updatable=false)
+    private OffsetDateTime updatedAt;
+
+    @Column(name="deleted_at")
+    private OffsetDateTime deletedAt;
+}
