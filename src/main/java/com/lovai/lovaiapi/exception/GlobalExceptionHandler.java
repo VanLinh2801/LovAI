@@ -14,6 +14,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.List;
@@ -101,6 +102,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ApiError> handleUnsupportedMedia(HttpMediaTypeNotSupportedException ex, HttpServletRequest req) {
         return build(HttpStatus.UNSUPPORTED_MEDIA_TYPE, ex.getMessage(), req, "UNSUPPORTED_MEDIA_TYPE", null);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiError> handleResponseStatus(ResponseStatusException ex, HttpServletRequest req) {
+        return build(HttpStatus.valueOf(ex.getStatusCode().value()), ex.getMessage(), req, "RESPONSE_STATUS", null);
     }
 
     // 404 cho URL không khớp (cần bật cấu hình phía dưới)
