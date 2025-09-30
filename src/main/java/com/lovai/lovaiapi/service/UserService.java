@@ -4,10 +4,13 @@ import com.lovai.lovaiapi.dto.UserRegisterRequest;
 import com.lovai.lovaiapi.dto.UserResponse;
 import com.lovai.lovaiapi.dto.UserUpdateRequest;
 import com.lovai.lovaiapi.dto.ChangePasswordRequest;
+import com.lovai.lovaiapi.dto.LoginRequest;
+import com.lovai.lovaiapi.dto.LoginResponse;
 import com.lovai.lovaiapi.model.User;
 import com.lovai.lovaiapi.model.EmailVerificationToken;
 import com.lovai.lovaiapi.repository.UserRepository;
 import com.lovai.lovaiapi.repository.EmailVerificationTokenRepository;
+import com.lovai.lovaiapi.util.JwtUtil;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,13 +30,16 @@ public class UserService {
     private final EmailVerificationTokenRepository tokenRepository;
     private final EmailService emailService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     public UserService(UserRepository userRepository,
                        EmailVerificationTokenRepository tokenRepository,
-                       EmailService emailService) {
+                       EmailService emailService,
+                       JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.emailService = emailService;
+        this.jwtUtil = jwtUtil;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -154,18 +160,38 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu cũ không đúng");
         }
 
-        // Kiểm tra mật khẩu mới có khác mật khẩu cũ không
         if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải khác mật khẩu cũ");
         }
 
-        // Cập nhật mật khẩu mới
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không đúng"));
+
+        if (!user.isVerified()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Tài khoản chưa được xác minh");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu không đúng");
+        }
+
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+        
+        LoginResponse response = new LoginResponse();
+        response.setToken(token);
+        response.setUserId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setName(user.getName());
+        
+        return response;
     }
 }

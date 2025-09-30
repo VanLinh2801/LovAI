@@ -5,6 +5,8 @@ import com.lovai.lovaiapi.dto.UserResponse;
 import com.lovai.lovaiapi.dto.UserUpdateRequest;
 import com.lovai.lovaiapi.dto.ChangePasswordRequest;
 import com.lovai.lovaiapi.dto.VerifyEmailRequest;
+import com.lovai.lovaiapi.dto.LoginRequest;
+import com.lovai.lovaiapi.dto.LoginResponse;
 import com.lovai.lovaiapi.service.UserService;
 
 import java.util.Map;
@@ -55,5 +57,18 @@ public class UserController {
                                                              @Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(id, request);
         return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse response = userService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout() {
+        // Với JWT stateless, logout chỉ cần client xóa token
+        // Có thể implement blacklist token nếu cần
+        return ResponseEntity.ok(Map.of("message", "Đăng xuất thành công"));
     }
 }
