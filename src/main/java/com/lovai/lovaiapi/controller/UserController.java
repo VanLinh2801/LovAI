@@ -1,12 +1,13 @@
 package com.lovai.lovaiapi.controller;
 
-import com.lovai.lovaiapi.dto.UserRegisterRequest;
-import com.lovai.lovaiapi.dto.UserResponse;
-import com.lovai.lovaiapi.dto.UserUpdateRequest;
-import com.lovai.lovaiapi.dto.ChangePasswordRequest;
-import com.lovai.lovaiapi.dto.VerifyEmailRequest;
-import com.lovai.lovaiapi.dto.LoginRequest;
-import com.lovai.lovaiapi.dto.LoginResponse;
+import com.lovai.lovaiapi.dto.user.UserRegisterRequest;
+import com.lovai.lovaiapi.dto.user.UserResponse;
+import com.lovai.lovaiapi.dto.user.UserUpdateRequest;
+import com.lovai.lovaiapi.dto.user.ChangePasswordRequest;
+import com.lovai.lovaiapi.dto.user.VerifyEmailRequest;
+import com.lovai.lovaiapi.dto.user.LoginRequest;
+import com.lovai.lovaiapi.dto.user.LoginResponse;
+import com.lovai.lovaiapi.dto.user.UserSearchResponse;
 import com.lovai.lovaiapi.service.UserService;
 
 import java.util.Map;
@@ -67,8 +68,15 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout() {
-        // Với JWT stateless, logout chỉ cần client xóa token
-        // Có thể implement blacklist token nếu cần
         return ResponseEntity.ok(Map.of("message", "Đăng xuất thành công"));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<UserSearchResponse> searchUsers(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        UserSearchResponse response = userService.searchUsers(keyword, page, size);
+        return ResponseEntity.ok(response);
     }
 }

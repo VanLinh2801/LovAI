@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // -------- Custom exceptions
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(NotFoundException ex, HttpServletRequest req) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), req, ex.code, null);
@@ -62,7 +61,6 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), req, ex.code, null);
     }
 
-    // -------- Validation & parsing
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleBeanValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
         List<FieldErrorDto> details = ex.getBindingResult().getFieldErrors().stream()
@@ -88,7 +86,6 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), req, "BAD_REQUEST", null);
     }
 
-    // -------- Infra / persistence / security
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest req) {
         return build(HttpStatus.CONFLICT, "Data integrity violation", req, "DATA_INTEGRITY", null);
@@ -109,20 +106,17 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.valueOf(ex.getStatusCode().value()), ex.getMessage(), req, "RESPONSE_STATUS", null);
     }
 
-    // 404 cho URL không khớp (cần bật cấu hình phía dưới)
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiError> handleNoHandler(NoHandlerFoundException ex, HttpServletRequest req) {
         return build(HttpStatus.NOT_FOUND, "No handler found for " + ex.getHttpMethod() + " " + ex.getRequestURL(),
                 req, "NO_HANDLER", null);
     }
 
-    // -------- Fallback
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleAll(Exception ex, HttpServletRequest req) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error", req, "INTERNAL_ERROR", null);
     }
 
-    // -------- Helper
     private ResponseEntity<ApiError> build(HttpStatus status, String message, HttpServletRequest req,
                                            String code, List<FieldErrorDto> details) {
         ApiError body = new ApiError(status.value(), status.getReasonPhrase(), message,

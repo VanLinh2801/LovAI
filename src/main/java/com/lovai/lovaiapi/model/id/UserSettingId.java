@@ -1,4 +1,3 @@
-// model/id/UserSettingId.java
 package com.lovai.lovaiapi.model.id;
 
 import jakarta.persistence.Embeddable;

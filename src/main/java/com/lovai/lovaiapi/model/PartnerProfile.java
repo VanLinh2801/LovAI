@@ -1,4 +1,3 @@
-// model/PartnerProfile.java
 package com.lovai.lovaiapi.model;
 
 import jakarta.persistence.*;

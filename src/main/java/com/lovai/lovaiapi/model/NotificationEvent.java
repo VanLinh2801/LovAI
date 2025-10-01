@@ -1,4 +1,3 @@
-// model/NotificationEvent.java
 package com.lovai.lovaiapi.model;
 
 import jakarta.persistence.*;

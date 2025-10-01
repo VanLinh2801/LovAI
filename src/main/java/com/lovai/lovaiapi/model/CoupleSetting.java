@@ -1,4 +1,3 @@
-// model/CoupleSetting.java
 package com.lovai.lovaiapi.model;
 
 import jakarta.persistence.*;

@@ -1,17 +1,21 @@
 package com.lovai.lovaiapi.service;
 
-import com.lovai.lovaiapi.dto.UserRegisterRequest;
-import com.lovai.lovaiapi.dto.UserResponse;
-import com.lovai.lovaiapi.dto.UserUpdateRequest;
-import com.lovai.lovaiapi.dto.ChangePasswordRequest;
-import com.lovai.lovaiapi.dto.LoginRequest;
-import com.lovai.lovaiapi.dto.LoginResponse;
+import com.lovai.lovaiapi.dto.user.UserRegisterRequest;
+import com.lovai.lovaiapi.dto.user.UserResponse;
+import com.lovai.lovaiapi.dto.user.UserUpdateRequest;
+import com.lovai.lovaiapi.dto.user.ChangePasswordRequest;
+import com.lovai.lovaiapi.dto.user.LoginRequest;
+import com.lovai.lovaiapi.dto.user.LoginResponse;
+import com.lovai.lovaiapi.dto.user.UserSearchResponse;
 import com.lovai.lovaiapi.model.User;
 import com.lovai.lovaiapi.model.EmailVerificationToken;
 import com.lovai.lovaiapi.repository.UserRepository;
 import com.lovai.lovaiapi.repository.EmailVerificationTokenRepository;
 import com.lovai.lovaiapi.util.JwtUtil;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -193,5 +199,33 @@ public class UserService {
         response.setName(user.getName());
         
         return response;
+    }
+
+    public UserSearchResponse searchUsers(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> userPage = userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                keyword, keyword, pageable);
+
+        List<UserResponse> userResponses = new ArrayList<>();
+        for (User user : userPage.getContent()) {
+            UserResponse response = new UserResponse();
+            response.setId(user.getId());
+            response.setEmail(user.getEmail());
+            response.setName(user.getName());
+            response.setGender(user.getGender());
+            response.setDateOfBirth(user.getDateOfBirth());
+            userResponses.add(response);
+        }
+
+        UserSearchResponse searchResponse = new UserSearchResponse();
+        searchResponse.setUsers(userResponses);
+        searchResponse.setTotalPages(userPage.getTotalPages());
+        searchResponse.setTotalElements(userPage.getTotalElements());
+        searchResponse.setCurrentPage(page);
+        searchResponse.setPageSize(size);
+        searchResponse.setHasNext(userPage.hasNext());
+        searchResponse.setHasPrevious(userPage.hasPrevious());
+
+        return searchResponse;
     }
 }

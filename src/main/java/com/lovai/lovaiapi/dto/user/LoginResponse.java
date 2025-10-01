@@ -1,4 +1,4 @@
-package com.lovai.lovaiapi.dto;
+package com.lovai.lovaiapi.dto.user;
 
 import java.util.UUID;
 

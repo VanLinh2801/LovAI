@@ -1,4 +1,3 @@
-// model/PushToken.java
 package com.lovai.lovaiapi.model;
 
 import jakarta.persistence.*;
