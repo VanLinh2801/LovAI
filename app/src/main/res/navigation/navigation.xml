@@ -25,4 +25,19 @@
         android:name="com.example.lovai.Frag.SettingFragment"
         android:label="fragment_setting"
         tools:layout="@layout/fragment_setting" />
+    <fragment
+        android:id="@+id/AISuggestFragment"
+        android:name="com.example.lovai.Frag.AISuggestFragment"
+        android:label="fragment_a_i_suggest"
+        tools:layout="@layout/fragment_a_i_suggest" />
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.lovai.Frag.ProfileFragment"
+        android:label="fragment_profile"
+        tools:layout="@layout/fragment_profile" />
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.example.lovai.Frag.EditProfileFragment"
+        android:label="EditProfile" />
+
 </navigation>

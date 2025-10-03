@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "541273855588",
+    "project_id": "lovai-3fdc6",
+    "storage_bucket": "lovai-3fdc6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541273855588:android:54f1a2683d205893737171",
+        "android_client_info": {
+          "package_name": "com.example.lovai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDY33au94lW3VtDN1-f7b3zjzUGO71uMhs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
