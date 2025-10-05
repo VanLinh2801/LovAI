@@ -150,23 +150,21 @@
         app:layout_constraintStart_toStartOf="@+id/textView12"
         app:layout_constraintTop_toBottomOf="@+id/textView12" />
 
-    <EditText
-        android:id="@+id/editTextTextGender"
+    <Spinner
+        android:id="@+id/spinnerGender"
         android:layout_width="325dp"
         android:layout_height="40dp"
         android:layout_marginTop="24dp"
         android:background="@drawable/textshape"
-        android:drawableLeft="@drawable/heart"
         android:drawablePadding="15dp"
         android:elevation="5dp"
         android:ems="10"
         android:fontFamily="@font/latobolditalic"
-        android:hint="Gender"
-        android:inputType="text"
+        android:spinnerMode="dropdown"
         android:paddingLeft="15dp"
         app:layout_constraintEnd_toEndOf="@+id/editTextTextPassword2"
         app:layout_constraintStart_toStartOf="@+id/editTextTextPassword2"
-        app:layout_constraintTop_toBottomOf="@+id/editTextTextPassword2" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextTextPassword2"/>
 
     <EditText
         android:id="@+id/editTextTextDateOfBirth"
@@ -183,9 +181,9 @@
         android:inputType="none"
         android:focusable="false"
         android:paddingLeft="15dp"
-        app:layout_constraintEnd_toEndOf="@+id/editTextTextGender"
-        app:layout_constraintStart_toStartOf="@+id/editTextTextGender"
-        app:layout_constraintTop_toBottomOf="@+id/editTextTextGender" />
+        app:layout_constraintEnd_toEndOf="@+id/spinnerGender"
+        app:layout_constraintStart_toStartOf="@+id/spinnerGender"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerGender" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

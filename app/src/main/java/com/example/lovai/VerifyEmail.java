@@ -35,33 +35,34 @@ public class VerifyEmail extends AppCompatActivity {
         setContentView(R.layout.activity_verify_email);
         edtCode = findViewById(R.id.edtCode);
         buttonVerify = findViewById(R.id.btnVerify);
-        userApi = RetrofitClient.getUserApi();
+        userApi = RetrofitClient.getUserApi(this);
         String email=getIntent().getStringExtra("email");
 
 
         buttonVerify.setOnClickListener(v->{
             String otp=edtCode.getText().toString().trim();
             if(otp.isEmpty()){
-                Toast.makeText(VerifyEmail.this,"Vui lòng nhập mã xác thực",Toast.LENGTH_SHORT)
+                Toast.makeText(VerifyEmail.this,"Please enter the verification code",Toast.LENGTH_SHORT).show();
+                return;
             };
             VerifyEmailRequest verifyEmailRequest = new VerifyEmailRequest(email,otp);
             userApi.verifyEmail(verifyEmailRequest).enqueue(new Callback<Map<String, String>>() {
                 @Override
                 public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
                     if(response.isSuccessful() && response.body()!=null){
-                        Toast.makeText(VerifyEmail.this, "Xác minh email thành công", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(VerifyEmail.this, "Email verification successful", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(VerifyEmail.this, LoginActivity.class);
                         startActivity(intent);
                         finish();
                     }
                     else{
-                        Toast.makeText(VerifyEmail.this, "Mã OTP không đúng", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(VerifyEmail.this, "Incorrect OTP code", Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<Map<String, String>> call, Throwable t) {
-                    Toast.makeText(VerifyEmail.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(VerifyEmail.this, "Connection error", Toast.LENGTH_SHORT).show();
                 }
             });
 

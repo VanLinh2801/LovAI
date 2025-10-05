@@ -39,5 +39,15 @@
         android:id="@+id/editProfileFragment"
         android:name="com.example.lovai.Frag.EditProfileFragment"
         android:label="EditProfile" />
+    <fragment
+        android:id="@+id/coupleFragment"
+        android:name="com.example.lovai.Frag.CoupleFragment"
+        android:label="fragment_couple"
+        tools:layout="@layout/fragment_couple" />
+    <fragment
+        android:id="@+id/editCoupleFragment"
+        android:name="com.example.lovai.Frag.EditCoupleFragment"
+        android:label="fragment_edit_couple"
+        tools:layout="@layout/fragment_edit_couple" />
 
 </navigation>

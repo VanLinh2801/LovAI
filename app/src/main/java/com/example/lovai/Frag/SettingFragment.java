@@ -72,7 +72,7 @@ public class SettingFragment extends Fragment {
 
 
         //Logout
-        userApi = RetrofitClient.getUserApi();
+        userApi = RetrofitClient.getUserApi(requireContext());
         TextView tvLogout = view.findViewById(R.id.tvLogout);
         tvLogout.setOnClickListener(v->{
             Call<Map<String,String>> call = userApi.logout();

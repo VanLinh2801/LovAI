@@ -7,8 +7,8 @@
     <item android:title="Discover"
         android:id="@+id/discoverFragment"
         android:icon="@drawable/heart"/>
-    <item android:title="Moments"
-        android:id="@+id/momentFragment"
+    <item android:title="Couples"
+        android:id="@+id/coupleFragment"
         android:icon="@drawable/cam"/>
     <item android:title="Settings"
         android:id="@+id/settingFragment"

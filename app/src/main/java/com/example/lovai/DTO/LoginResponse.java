@@ -5,7 +5,7 @@ import java.util.UUID;
 public class LoginResponse {
     private String token;
     private String tokenType;
-    private UUID userId;
+    private String userId;
     private String email;
     private String name;
 
@@ -15,8 +15,8 @@ public class LoginResponse {
     public String getTokenType() { return tokenType; }
     public void setTokenType(String tokenType) { this.tokenType = tokenType; }
 
-    public UUID getUserId() { return userId; }
-    public void setUserId(UUID userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

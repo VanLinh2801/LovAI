@@ -29,7 +29,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
     private UserApi userApi;
     private TextView tvSignUp;
-    private TextView tvForgotPassword;
+//    private TextView tvForgotPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,13 +41,13 @@ public class LoginActivity extends AppCompatActivity {
         edtPassword = findViewById(R.id.editTextTextPassword);
         loginButton = findViewById(R.id.button4);
 
-        userApi = RetrofitClient.getUserApi();
+        userApi = RetrofitClient.getUserApi(this);
 
         loginButton.setOnClickListener(v->{
             String email = edtEmail.getText().toString();
             String password = edtPassword.getText().toString();
             if(email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Vui lòng nhập email và mật khẩu", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "Please enter email and password", Toast.LENGTH_SHORT).show();
                 return;
             }
             LoginRequest request = new LoginRequest(email, password);
@@ -55,9 +55,18 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                     if(response.isSuccessful() && response.body() != null) {
-//                        LoginResponse loginRes = response.body();
+                        LoginResponse loginRes = response.body();
+//                        Luu thong tin
+                        SharedPreferences prefs  =getSharedPreferences("MyAppPrefs",MODE_PRIVATE);
+                        SharedPreferences.Editor editor=prefs.edit();
+                        editor.putString("userId",loginRes.getUserId());
+                        editor.putString("token",loginRes.getToken());
+                        editor.putString("email",loginRes.getEmail());
+                        editor.putString("name",loginRes.getName());
+                        editor.apply();
 
-                        Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+
+                        Toast.makeText(LoginActivity.this, "Login Successfully", Toast.LENGTH_SHORT).show();
 
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         startActivity(intent);
@@ -67,7 +76,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<LoginResponse> call, Throwable t) {
-                    Toast.makeText(LoginActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         });
@@ -77,7 +86,7 @@ public class LoginActivity extends AppCompatActivity {
         SignUpRedirect();
 
 //        ForgotPassword
-        tvForgotPassword=findViewById(R.id.textView14);
+//        tvForgotPassword=findViewById(R.id.textView14);
 
     }
     private void SignUpRedirect(){
@@ -88,7 +97,9 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void ForgotPassword(){
-
-    }
+//    private void ForgotPassword(){
+////        tvForgotPassword.setOnClickListener(v->{
+////            Intent intent = new Intent(Fo)
+////        });
+//    }
 }

@@ -36,6 +36,6 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="16dp"
         android:contentDescription="Bắt đầu đi chơi"
-        app:srcCompat="@drawable/ic_add" />
+         />
 
 </RelativeLayout>
