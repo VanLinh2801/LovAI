@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/register").permitAll()
                         .requestMatchers("/api/v1/users/verify-email").permitAll()
                         .requestMatchers("/api/v1/users/login").permitAll()
+                        .requestMatchers("/api/v1/users/google-login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

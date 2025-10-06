@@ -16,6 +16,7 @@ import com.lovai.lovaiapi.repository.UserRepository;
 import com.lovai.lovaiapi.repository.PartnerProfileRepository;
 import com.lovai.lovaiapi.repository.CoupleInviteRepository;
 
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -137,7 +138,7 @@ public class CoupleService {
         }
 
         PartnerProfile partnerProfile = new PartnerProfile();
-        partnerProfile.setUser(user); // Liên kết với user hiện tại
+        partnerProfile.setUser(null);
         partnerProfile.setName(request.getPartner().getName());
         partnerProfile.setGender(request.getPartner().getGender());
         partnerProfile.setDateOfBirth(request.getPartner().getDateOfBirth());
@@ -181,7 +182,11 @@ public class CoupleService {
 
         Couple couple = couples.get(0);
 
-        return convertToCoupleResponse(couple);
+        if (couple.getPartnerProfile() != null) {
+            return convertToCoupleResponseWithPartner(couple);
+        } else {
+            return convertToCoupleResponse(couple);
+        }
     }
 
     @Transactional
@@ -224,7 +229,11 @@ public class CoupleService {
 
         Couple savedCouple = coupleRepository.save(couple);
 
-        return convertToCoupleResponse(savedCouple);
+        if (savedCouple.getPartnerProfile() != null) {
+            return convertToCoupleResponseWithPartner(savedCouple);
+        } else {
+            return convertToCoupleResponse(savedCouple);
+        }
     }
 
     private CoupleResponse convertToCoupleResponseWithPartner(Couple couple) {

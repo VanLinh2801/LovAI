@@ -15,8 +15,8 @@ public class FileValidationUtil {
         "video/mp4", "video/avi", "video/mov", "video/wmv", "video/webm"
     );
     
-    private static final long MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
-    private static final long MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
+    private static final long MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+    private static final long MAX_VIDEO_SIZE = 100 * 1024 * 1024;
     
     public static boolean isValidImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {

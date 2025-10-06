@@ -6,12 +6,15 @@ import com.lovai.lovaiapi.dto.user.UserUpdateRequest;
 import com.lovai.lovaiapi.dto.user.ChangePasswordRequest;
 import com.lovai.lovaiapi.dto.user.LoginRequest;
 import com.lovai.lovaiapi.dto.user.LoginResponse;
+import com.lovai.lovaiapi.dto.user.GoogleLoginRequest;
 import com.lovai.lovaiapi.dto.user.UserSearchResponse;
 import com.lovai.lovaiapi.model.User;
 import com.lovai.lovaiapi.model.EmailVerificationToken;
 import com.lovai.lovaiapi.repository.UserRepository;
 import com.lovai.lovaiapi.repository.EmailVerificationTokenRepository;
 import com.lovai.lovaiapi.util.JwtUtil;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,15 +40,18 @@ public class UserService {
     private final EmailService emailService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final FirebaseAuth firebaseAuth;
 
     public UserService(UserRepository userRepository,
                        EmailVerificationTokenRepository tokenRepository,
                        EmailService emailService,
-                       JwtUtil jwtUtil) {
+                       JwtUtil jwtUtil,
+                       FirebaseAuth firebaseAuth) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.emailService = emailService;
         this.jwtUtil = jwtUtil;
+        this.firebaseAuth = firebaseAuth;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
@@ -227,5 +233,50 @@ public class UserService {
         searchResponse.setHasPrevious(userPage.hasPrevious());
 
         return searchResponse;
+    }
+
+    public LoginResponse loginWithGoogle(GoogleLoginRequest request) {
+        try {
+            FirebaseToken decodedToken = firebaseAuth.verifyIdToken(request.getFirebaseIdToken());
+            
+            String email = decodedToken.getEmail();
+            String name = decodedToken.getName();
+            
+            if (email == null || email.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email không có trong Firebase token");
+            }
+            
+            Optional<User> existingUser = userRepository.findByEmail(email);
+            User user;
+            
+            if (existingUser.isPresent()) {
+                user = existingUser.get();
+                if (name != null && !name.isEmpty()) {
+                    user.setName(name);
+                }
+                user.setVerified(true);
+                userRepository.save(user);
+            } else {
+                user = new User();
+                user.setEmail(email);
+                user.setName(name != null ? name : "User");
+                user.setVerified(true);
+                user.setPasswordHash("");
+                userRepository.save(user);
+            }
+            
+            String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+            
+            LoginResponse response = new LoginResponse();
+            response.setToken(token);
+            response.setUserId(user.getId());
+            response.setEmail(user.getEmail());
+            response.setName(user.getName());
+            
+            return response;
+            
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Firebase token không hợp lệ: " + e.getMessage());
+        }
     }
 }

@@ -16,7 +16,7 @@ public class JwtUtil {
     @Value("${jwt.secret:lovai-secret-key-2024}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}") // 24 hours in milliseconds
+    @Value("${jwt.expiration:86400000}")
     private long expiration;
 
     public String generateToken(UUID userId, String email) {

@@ -7,6 +7,7 @@ import com.lovai.lovaiapi.dto.user.ChangePasswordRequest;
 import com.lovai.lovaiapi.dto.user.VerifyEmailRequest;
 import com.lovai.lovaiapi.dto.user.LoginRequest;
 import com.lovai.lovaiapi.dto.user.LoginResponse;
+import com.lovai.lovaiapi.dto.user.GoogleLoginRequest;
 import com.lovai.lovaiapi.dto.user.UserSearchResponse;
 import com.lovai.lovaiapi.service.UserService;
 
@@ -69,6 +70,12 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout() {
         return ResponseEntity.ok(Map.of("message", "Đăng xuất thành công"));
+    }
+
+    @PostMapping("/google-login")
+    public ResponseEntity<LoginResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+        LoginResponse response = userService.loginWithGoogle(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/search")

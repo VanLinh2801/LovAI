@@ -29,7 +29,7 @@ public class PartnerProfile {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition="gender_enum")
+    @Column(name = "gender")
     private Gender gender;
 
     @Column(name="date_of_birth")
