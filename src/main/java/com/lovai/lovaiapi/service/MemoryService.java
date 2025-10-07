@@ -18,7 +18,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,7 +44,7 @@ public class MemoryService {
                 .couple(couple)
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .happenedAt(request.getHappenedAt() != null ? request.getHappenedAt() : OffsetDateTime.now())
+                .happenedAt(request.getHappenedAt() != null ? request.getHappenedAt().atStartOfDay(ZoneOffset.UTC).toOffsetDateTime() : OffsetDateTime.now())
                 .locationText(request.getLocationText())
                 .mediaCount(0)
                 .meta(request.getMeta() != null ? request.getMeta() : Map.of())
@@ -104,8 +106,10 @@ public class MemoryService {
     }
     
     @Transactional(readOnly = true)
-    public List<MemoryResponse> getMemoriesByDateRange(UUID coupleId, OffsetDateTime startDate, OffsetDateTime endDate) {
-        List<Memory> memories = memoryRepository.findByCoupleIdAndDateRange(coupleId, startDate, endDate);
+    public List<MemoryResponse> getMemoriesByDateRange(UUID coupleId, LocalDate startDate, LocalDate endDate) {
+        OffsetDateTime startDateTime = startDate.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime();
+        OffsetDateTime endDateTime = endDate.atTime(23, 59, 59, 999999999).atOffset(ZoneOffset.UTC);
+        List<Memory> memories = memoryRepository.findByCoupleIdAndDateRange(coupleId, startDateTime, endDateTime);
         return memories.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -124,7 +128,7 @@ public class MemoryService {
             memory.setDescription(request.getDescription());
         }
         if (request.getHappenedAt() != null) {
-            memory.setHappenedAt(request.getHappenedAt());
+            memory.setHappenedAt(request.getHappenedAt().atStartOfDay(ZoneOffset.UTC).toOffsetDateTime());
         }
         if (request.getLocationText() != null) {
             memory.setLocationText(request.getLocationText());
@@ -176,7 +180,7 @@ public class MemoryService {
     }
     
     @Transactional(readOnly = true)
-    public MemoryStatisticsResponse getMemoryStatistics(UUID coupleId, OffsetDateTime startDate, OffsetDateTime endDate, String locationText) {
+    public MemoryStatisticsResponse getMemoryStatistics(UUID coupleId, LocalDate startDate, LocalDate endDate, String locationText) {
         long totalMemories = memoryRepository.countByCoupleId(coupleId);
         long memoriesInDateRange = 0;
         long memoriesByLocation = 0;
@@ -185,7 +189,9 @@ public class MemoryService {
         Map<String, Object> locationFilter = Map.of();
         
         if (startDate != null && endDate != null) {
-            memoriesInDateRange = memoryRepository.countByCoupleIdAndDateRange(coupleId, startDate, endDate);
+            OffsetDateTime startDateTime = startDate.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime();
+            OffsetDateTime endDateTime = endDate.atTime(23, 59, 59, 999999999).atOffset(ZoneOffset.UTC);
+            memoriesInDateRange = memoryRepository.countByCoupleIdAndDateRange(coupleId, startDateTime, endDateTime);
             dateRangeFilter = Map.of(
                 "startDate", startDate,
                 "endDate", endDate
@@ -227,7 +233,7 @@ public class MemoryService {
                 .coupleId(memory.getCouple().getId())
                 .title(memory.getTitle())
                 .description(memory.getDescription())
-                .happenedAt(memory.getHappenedAt())
+                .happenedAt(memory.getHappenedAt() != null ? memory.getHappenedAt().toLocalDate() : null)
                 .locationText(memory.getLocationText())
                 .mediaCount(memory.getMediaCount())
                 .meta(memory.getMeta())

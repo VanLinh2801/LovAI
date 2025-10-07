@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -75,8 +75,8 @@ public class MemoryController {
     @GetMapping("/by-date-range")
     public ResponseEntity<List<MemoryResponse>> getMemoriesByDateRange(
             @RequestParam UUID coupleId,
-            @RequestParam OffsetDateTime startDate,
-            @RequestParam OffsetDateTime endDate) {
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate) {
         List<MemoryResponse> responses = memoryService.getMemoriesByDateRange(coupleId, startDate, endDate);
         return ResponseEntity.ok(responses);
     }
@@ -119,8 +119,8 @@ public class MemoryController {
     @GetMapping("/statistics")
     public ResponseEntity<MemoryStatisticsResponse> getMemoryStatistics(
             @RequestParam UUID coupleId,
-            @RequestParam(required = false) OffsetDateTime startDate,
-            @RequestParam(required = false) OffsetDateTime endDate,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) String locationText) {
         MemoryStatisticsResponse response = memoryService.getMemoryStatistics(coupleId, startDate, endDate, locationText);
         return ResponseEntity.ok(response);

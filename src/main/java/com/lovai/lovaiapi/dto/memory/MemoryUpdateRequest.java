@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 
 @Data
@@ -16,8 +16,8 @@ public class MemoryUpdateRequest {
     @Size(max = 2000, message = "Description must not exceed 2000 characters")
     private String description;
     
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-    private OffsetDateTime happenedAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate happenedAt;
     
     @Size(max = 500, message = "Location text must not exceed 500 characters")
     private String locationText;

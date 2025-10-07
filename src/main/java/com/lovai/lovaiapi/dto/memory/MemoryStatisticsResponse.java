@@ -3,7 +3,6 @@ package com.lovai.lovaiapi.dto.memory;
 import lombok.Data;
 import lombok.Builder;
 
-import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 

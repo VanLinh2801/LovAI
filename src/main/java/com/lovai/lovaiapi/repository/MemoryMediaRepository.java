@@ -1,8 +1,12 @@
 package com.lovai.lovaiapi.repository;
 
 import com.lovai.lovaiapi.model.MemoryMedia;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -25,6 +29,8 @@ public interface MemoryMediaRepository extends JpaRepository<MemoryMedia, UUID> 
     @Query("SELECT mm FROM MemoryMedia mm WHERE mm.memory.id = :memoryId AND mm.mediaType = :mediaType ORDER BY mm.createdAt ASC")
     List<MemoryMedia> findByMemoryIdAndMediaType(@Param("memoryId") UUID memoryId, @Param("mediaType") String mediaType);
     
+    @Modifying
+    @Transactional
     @Query("DELETE FROM MemoryMedia mm WHERE mm.memory.id = :memoryId")
     void deleteByMemoryId(@Param("memoryId") UUID memoryId);
     
