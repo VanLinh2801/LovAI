@@ -26,7 +26,7 @@ public class NotificationRecipient {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="delivery_status", columnDefinition="delivery_status_enum")
+    @Column(name="delivery_status")
     private DeliveryStatus deliveryStatus;
 
     @Column(name="delivered_at")

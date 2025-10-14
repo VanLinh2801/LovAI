@@ -53,8 +53,7 @@ public class NotificationService {
         notification.setScheduledAt(request.getScheduledAt());
         
         if (request.getCreatedById() != null) {
-            User createdBy = userRepository.findById(request.getCreatedById())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CreatedBy user not found"));
+            User createdBy = userRepository.findById(request.getCreatedById()).orElse(null);
             notification.setCreatedBy(createdBy);
         }
         

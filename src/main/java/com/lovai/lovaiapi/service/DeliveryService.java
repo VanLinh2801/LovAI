@@ -205,7 +205,7 @@ public class DeliveryService {
                     });
         } catch (Exception e) {
             logger.warn("Error checking if user {} is online: {}", userId, e.getMessage());
-            return false; // Default to offline nếu có lỗi
+            return false;
         }
     }
 }

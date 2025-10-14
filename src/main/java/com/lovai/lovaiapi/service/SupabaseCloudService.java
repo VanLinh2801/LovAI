@@ -48,8 +48,14 @@ public class SupabaseCloudService implements CloudService {
         try {
             String fileName = generateUniqueFileName(file.getOriginalFilename());
             String filePath = folder + "/" + fileName;
+
+            String contentType = file.getContentType();
+            if (contentType == null || contentType.isBlank()) {
+                contentType = "application/octet-stream";
+            }
             
             HttpHeaders headers = createHeaders();
+            headers.setContentType(MediaType.parseMediaType(contentType));
             HttpEntity<byte[]> request = new HttpEntity<>(file.getBytes(), headers);
             
             String uploadUrl = supabaseUrl + "/storage/v1/object/" + bucketName + "/" + filePath;

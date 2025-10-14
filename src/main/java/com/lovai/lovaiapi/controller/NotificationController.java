@@ -1,9 +1,12 @@
 package com.lovai.lovaiapi.controller;
 
 import com.lovai.lovaiapi.dto.notification.NotificationListResponse;
+import com.lovai.lovaiapi.dto.notification.NotificationResponse;
+import com.lovai.lovaiapi.dto.notification.CreateNotificationRequest;
 import com.lovai.lovaiapi.dto.notification.MarkAsReadRequest;
 import com.lovai.lovaiapi.service.NotificationService;
 
+import org.apache.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +22,12 @@ public class NotificationController {
 
     public NotificationController(NotificationService notificationService) {
         this.notificationService = notificationService;
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<NotificationResponse> createNotification(@Valid @RequestBody CreateNotificationRequest request) {
+        notificationService.createNotification(request);
+        return ResponseEntity.status(HttpStatus.SC_CREATED).build();
     }
 
     @GetMapping

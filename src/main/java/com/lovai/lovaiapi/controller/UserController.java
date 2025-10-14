@@ -9,10 +9,18 @@ import com.lovai.lovaiapi.dto.user.LoginRequest;
 import com.lovai.lovaiapi.dto.user.LoginResponse;
 import com.lovai.lovaiapi.dto.user.GoogleLoginRequest;
 import com.lovai.lovaiapi.dto.user.UserSearchResponse;
+import com.lovai.lovaiapi.dto.notification.CreateNotificationRequest;
+import com.lovai.lovaiapi.model.Notification;
+import com.lovai.lovaiapi.model.User;
+import com.lovai.lovaiapi.model.enums.NotifChannel;
 import com.lovai.lovaiapi.service.UserService;
+import com.lovai.lovaiapi.service.NotificationService;
+import com.lovai.lovaiapi.service.DeliveryService;
+import com.lovai.lovaiapi.repository.UserRepository;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,14 +31,40 @@ import jakarta.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+    private final NotificationService notificationService;
+    private final DeliveryService deliveryService;
+    private final UserRepository userRepository;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, NotificationService notificationService, 
+                         DeliveryService deliveryService, UserRepository userRepository) {
         this.userService = userService;
+        this.notificationService = notificationService;
+        this.deliveryService = deliveryService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody UserRegisterRequest request) {
         String message = userService.register(request);
+        
+        try {
+            User newUser = userRepository.findByEmail(request.getEmail()).orElse(null);
+            if (newUser != null) {
+                CreateNotificationRequest notificationRequest = new CreateNotificationRequest();
+                notificationRequest.setTitle("🎉 Chào mừng đến với LovAI!");
+                notificationRequest.setBody("✨ Cảm ơn bạn đã đăng ký tài khoản! Hãy khám phá những tính năng thú vị của chúng tôi! 💕");
+                notificationRequest.setChannel(NotifChannel.IN_APP);
+                notificationRequest.setTemplateCode("WELCOME");
+                notificationRequest.setCategory("SYSTEM");
+                notificationRequest.setRecipientIds(List.of(newUser.getId()));
+                
+                Notification notification = notificationService.createNotification(notificationRequest);
+                deliveryService.sendInAppNotification(notification);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to send welcome notification: " + e.getMessage());
+        }
+        
         return ResponseEntity.ok(Map.of("message", message));
     }
 
@@ -58,6 +92,22 @@ public class UserController {
     public ResponseEntity<Map<String, String>> changePassword(@PathVariable UUID id, 
                                                              @Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(id, request);
+    
+        try {
+            CreateNotificationRequest notificationRequest = new CreateNotificationRequest();
+            notificationRequest.setTitle("🔐 Mật khẩu đã được thay đổi");
+            notificationRequest.setBody("✅ Mật khẩu tài khoản của bạn đã được thay đổi thành công. Nếu không phải bạn thực hiện, vui lòng liên hệ hỗ trợ ngay! 🚨");
+            notificationRequest.setChannel(NotifChannel.IN_APP);
+            notificationRequest.setTemplateCode("PASSWORD_CHANGED");
+            notificationRequest.setCategory("SECURITY");
+            notificationRequest.setRecipientIds(List.of(id));
+            
+            Notification notification = notificationService.createNotification(notificationRequest);
+            deliveryService.sendInAppNotification(notification);
+        } catch (Exception e) {
+            System.err.println("Failed to send password change notification: " + e.getMessage());
+        }
+        
         return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
     }
 

@@ -25,7 +25,7 @@ public class Notification {
     private String templateCode;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="channel", columnDefinition="notif_channel_enum", nullable=false)
+    @Column(name="channel")
     private NotifChannel channel;
 
     @Column(nullable=false)
@@ -45,7 +45,7 @@ public class Notification {
     private User createdBy;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="status", columnDefinition="notif_status_enum", nullable=false)
+    @Column(name="status")
     private NotifStatus status;
 
     @Column(name="scheduled_at")
