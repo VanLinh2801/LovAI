@@ -1,4 +1,4 @@
-package com.example.lovai.Frag;
+package com.example.lovai.Frag.Memory;
 
 import android.os.Bundle;
 
@@ -12,10 +12,10 @@ import com.example.lovai.R;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link MomentFragment#newInstance} factory method to
+ * Use the {@link MediaViewerFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MomentFragment extends Fragment {
+public class MediaViewerFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -26,7 +26,7 @@ public class MomentFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public MomentFragment() {
+    public MediaViewerFragment() {
         // Required empty public constructor
     }
 
@@ -36,11 +36,11 @@ public class MomentFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment MomentFragment.
+     * @return A new instance of fragment MediaViewerFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MomentFragment newInstance(String param1, String param2) {
-        MomentFragment fragment = new MomentFragment();
+    public static MediaViewerFragment newInstance(String param1, String param2) {
+        MediaViewerFragment fragment = new MediaViewerFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -61,6 +61,6 @@ public class MomentFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_moment, container, false);
+        return inflater.inflate(R.layout.fragment_media_viewer, container, false);
     }
 }

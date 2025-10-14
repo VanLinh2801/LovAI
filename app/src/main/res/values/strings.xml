@@ -9,5 +9,6 @@
         <item>other</item>
         <item>prefer_not_say</item>
     </string-array>
+    <string name="default_web_client_id">541273855588-lk9tjcqj5dt5076ajnke2r6cqq6tck8d.apps.googleusercontent.com</string>
 
 </resources>

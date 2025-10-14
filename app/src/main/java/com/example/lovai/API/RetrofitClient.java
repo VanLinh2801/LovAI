@@ -46,6 +46,9 @@ public class RetrofitClient {
     public static CoupleApi getCoupleApi(Context context) {
         return getRetrofit(context).create(CoupleApi.class);
     }
+    public static MemoryApi getMemoryApi(Context context) {
+        return getRetrofit(context).create(MemoryApi.class);
+    }
 
 
 

@@ -12,7 +12,20 @@
           "package_name": "com.example.lovai"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "541273855588-l4fl0crg2q7622qgd48vte5caf1i9t6h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lovai",
+            "certificate_hash": "afcf1ff8bac09d6e0b9e350b7ec7b841bbd35a4e"
+          }
+        },
+        {
+          "client_id": "541273855588-lk9tjcqj5dt5076ajnke2r6cqq6tck8d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDY33au94lW3VtDN1-f7b3zjzUGO71uMhs"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "541273855588-lk9tjcqj5dt5076ajnke2r6cqq6tck8d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

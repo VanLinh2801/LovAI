@@ -1,5 +1,9 @@
 package com.example.lovai.Frag;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.cardview.widget.CardView;
@@ -10,8 +14,20 @@ import androidx.navigation.Navigation;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.lovai.API.CoupleApi;
+import com.example.lovai.API.RetrofitClient;
+import com.example.lovai.DTO.CoupleResponse;
+import com.example.lovai.Frag.Memory.MemoryFragment;
 import com.example.lovai.R;
+import com.google.android.material.button.MaterialButton;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -61,11 +77,28 @@ public class CoupleFragment extends Fragment {
     }
 
     private CardView cardcouple;
+    private TextView tvCoupleName, tvAnniversaryDate;
+    private ImageView imgCover;
+    private MaterialButton btnViewMemory;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_couple,container,false);
+        tvCoupleName = view.findViewById(R.id.tvCoupleName);
+        tvAnniversaryDate = view.findViewById(R.id.tvAnniversaryDate);
+        imgCover = view.findViewById(R.id.imgCover);
+        btnViewMemory = view.findViewById(R.id.button2);
+        btnViewMemory.setOnClickListener(v->{
+            MemoryFragment viewMemoryFragment = new MemoryFragment();
+            NavController navController = Navigation.findNavController(requireActivity(), R.id.fragmentContainerView);
+            navController.navigate(R.id.memoryFragment);
+        });
+
+        loadMyCouple();
+
+
         cardcouple = view.findViewById(R.id.cardCouple);
         cardcouple.setOnClickListener(v->{
             EditCoupleFragment editCoupleFragment = new EditCoupleFragment();
@@ -76,4 +109,41 @@ public class CoupleFragment extends Fragment {
         return view;
 
     }
+
+    private void loadMyCouple(){
+        SharedPreferences prefs = requireActivity().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE);
+        String userId = prefs.getString("userId", null);
+        Toast.makeText(requireContext(), "Hello " + userId, Toast.LENGTH_SHORT).show();
+        CoupleApi coupleApi = RetrofitClient.getCoupleApi(requireContext());
+        coupleApi.getMyCouple(userId).enqueue(new Callback<CoupleResponse>() {
+            @Override
+            public void onResponse(Call<CoupleResponse> call, Response<CoupleResponse> response) {
+                if(response.isSuccessful() && response.body()!=null){
+                    CoupleResponse coupleResponse = response.body();
+                    displayCoupleInfo(coupleResponse);
+                    SharedPreferences prefs = requireActivity().getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("coupleId", coupleResponse.getId());
+                    editor.apply();
+                }
+                else{
+                    Toast.makeText(requireContext(), "Couple not found!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CoupleResponse> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    private void displayCoupleInfo(CoupleResponse coupleResponse){
+        if(coupleResponse!=null){
+            tvCoupleName.setText(coupleResponse.getTitle());
+            tvAnniversaryDate.setText("Anniversary: " + coupleResponse.getAnniversaryDate());
+        }
+    }
+
 }

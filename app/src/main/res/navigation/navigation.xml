@@ -16,11 +16,6 @@
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
     <fragment
-        android:id="@+id/momentFragment"
-        android:name="com.example.lovai.Frag.MomentFragment"
-        android:label="fragment_moment"
-        tools:layout="@layout/fragment_moment" />
-    <fragment
         android:id="@+id/settingFragment"
         android:name="com.example.lovai.Frag.SettingFragment"
         android:label="fragment_setting"
@@ -49,5 +44,19 @@
         android:name="com.example.lovai.Frag.EditCoupleFragment"
         android:label="fragment_edit_couple"
         tools:layout="@layout/fragment_edit_couple" />
+    <fragment
+        android:id="@+id/createMemoryFragment"
+        android:name="com.example.lovai.Frag.Memory.CreateMemoryFragment"
+        android:label="CreateMemoryFragment" />
+    <fragment
+        android:id="@+id/memoryFragment"
+        android:name="com.example.lovai.Frag.Memory.MemoryFragment"
+        android:label="fragment_memory"
+        tools:layout="@layout/fragment_memory" />
+    <fragment
+        android:id="@+id/memoryDetailFragment"
+        android:name="com.example.lovai.Frag.Memory.MemoryDetailFragment"
+        android:label="fragment_memory_detail"
+        tools:layout="@layout/fragment_memory_detail" />
 
 </navigation>

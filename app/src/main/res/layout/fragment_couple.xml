@@ -86,7 +86,7 @@
             android:id="@+id/button2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="View Moment"
+            android:text="View Memory"
             android:textColor="@android:color/white"
             android:textAllCaps="false"
             android:paddingVertical="12dp"

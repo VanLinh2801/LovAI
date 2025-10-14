@@ -118,8 +118,6 @@ public class EditCoupleFragment extends Fragment {
         coupleApi = RetrofitClient.getCoupleApi(requireContext());
         edtUserId.setText(userId);
 
-
-
         loadCouple();
 
         btnSaveCouple.setOnClickListener(v->saveCouple());
@@ -134,6 +132,8 @@ public class EditCoupleFragment extends Fragment {
                 if(response.isSuccessful() && response.body()!=null){
                     currentCouple = response.body();
                     fillForm(currentCouple);
+                    Toast.makeText(requireContext(), "Load couple success", Toast.LENGTH_SHORT).show();
+
                 }else{
 //                    try {
 //                        Log.e("LOAD_COUPLE", "Code: " + response.code());
