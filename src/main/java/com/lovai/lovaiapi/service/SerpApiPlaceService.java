@@ -166,13 +166,15 @@ public class SerpApiPlaceService {
             providerTags.add(catStr);
         }
         List<String> photoUrls = new ArrayList<>();
-        Object photos = res.get("photos");
-        if (photos instanceof List<?> plist) {
-            for (Object p : plist) {
-                if (p instanceof Map<?,?> pm) {
-                    String link = str(pm.get("photo_url"));
-                    if (link == null || link.isBlank()) link = str(pm.get("image"));
-                    if (link != null && !link.isBlank()) photoUrls.add(link);
+        // SerpAPI returns images array with title and thumbnail
+        Object images = res.get("images");
+        if (images instanceof List<?> imgList) {
+            for (Object img : imgList) {
+                if (img instanceof Map<?,?> imgMap) {
+                    String thumbnail = str(imgMap.get("thumbnail"));
+                    if (thumbnail != null && !thumbnail.isBlank()) {
+                        photoUrls.add(thumbnail);
+                    }
                 }
             }
         }
@@ -199,8 +201,23 @@ public class SerpApiPlaceService {
         if (venue.getMeta() == null) {
             venue.setMeta(new HashMap<>());
         }
+        // Extract most_relevant from user_reviews and save directly to review
+        Map<String, Object> reviewData = null;
+        Object userReviews = res.get("user_reviews");
+        if (userReviews instanceof Map<?,?> urMap) {
+            Object mostRelevant = urMap.get("most_relevant");
+            if (mostRelevant != null) {
+                if (mostRelevant instanceof Map<?,?>) {
+                    reviewData = new HashMap<>((Map<String, Object>) mostRelevant);
+                } else if (mostRelevant instanceof List<?>) {
+                    // If it's a list, wrap it in a map
+                    reviewData = new HashMap<>();
+                    reviewData.put("reviews", mostRelevant);
+                }
+            }
+        }
+        venue.setReview(reviewData);
         venue.setLastFetchedAt(java.time.OffsetDateTime.now());
-        venue.setRaw((Map<String, Object>) res);
         externalVenueRepository.save(venue);
 
         return PlaceDetailResponse.builder()
@@ -217,7 +234,7 @@ public class SerpApiPlaceService {
                 .website(website)
                 .types(types)
                 .photoUrls(photoUrls)
-                .raw((Map<String,Object>) res)
+                .review(reviewData)
                 .build();
     }
 

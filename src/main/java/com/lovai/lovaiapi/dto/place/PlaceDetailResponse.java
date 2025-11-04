@@ -27,5 +27,5 @@ public class PlaceDetailResponse {
     private String website;
     private List<String> types;
     private List<String> photoUrls;
-    private Map<String,Object> raw;
+    private Map<String,Object> review;
 }

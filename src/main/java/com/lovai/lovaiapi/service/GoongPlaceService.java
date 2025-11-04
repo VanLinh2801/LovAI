@@ -217,8 +217,23 @@ public class GoongPlaceService {
         if (venue.getMeta() == null) {
             venue.setMeta(new HashMap<>());
         }
+        // Extract most_relevant from user_reviews and save directly to review
+        Map<String, Object> reviewData = null;
+        Object userReviews = res.get("user_reviews");
+        if (userReviews instanceof Map<?,?> urMap) {
+            Object mostRelevant = urMap.get("most_relevant");
+            if (mostRelevant != null) {
+                if (mostRelevant instanceof Map<?,?>) {
+                    reviewData = new HashMap<>((Map<String, Object>) mostRelevant);
+                } else if (mostRelevant instanceof List<?>) {
+                    // If it's a list, wrap it in a map
+                    reviewData = new HashMap<>();
+                    reviewData.put("reviews", mostRelevant);
+                }
+            }
+        }
+        venue.setReview(reviewData);
         venue.setLastFetchedAt(java.time.OffsetDateTime.now());
-        venue.setRaw((Map<String, Object>) res);
         externalVenueRepository.save(venue);
 
         return PlaceDetailResponse.builder()
@@ -235,7 +250,7 @@ public class GoongPlaceService {
                 .website(website)
                 .types(types)
                 .photoUrls(photoUrls)
-                .raw((Map<String,Object>) res)
+                .review(reviewData)
                 .build();
     }
 

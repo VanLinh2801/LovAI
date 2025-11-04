@@ -60,8 +60,8 @@ public class ExternalVenue {
     private Map<String,Object> meta;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name="raw", columnDefinition="jsonb")
-    private Map<String,Object> raw;
+    @Column(name="review", columnDefinition="jsonb")
+    private Map<String,Object> review;
 
     @Column(name="last_fetched_at")
     private OffsetDateTime lastFetchedAt;
