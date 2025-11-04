@@ -42,4 +42,10 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     List<Notification> findByStatusAndScheduledAtLessThanEqual(NotifStatus status, OffsetDateTime scheduledAt);
     
     long countByStatusAndScheduledAtLessThanEqual(NotifStatus status, OffsetDateTime scheduledAt);
+
+    // Find scheduled notifications for a specific plan by reading planId from JSONB payload
+    @Query(value = "SELECT * FROM notifications n WHERE n.template_code = :templateCode AND n.status = :status AND n.payload->>'planId' = :planId", nativeQuery = true)
+    List<Notification> findScheduledByTemplateAndPlanId(@Param("templateCode") String templateCode,
+                                                        @Param("status") String status,
+                                                        @Param("planId") String planId);
 }

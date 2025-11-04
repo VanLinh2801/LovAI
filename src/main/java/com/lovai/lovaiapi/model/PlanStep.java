@@ -30,6 +30,10 @@ public class PlanStep {
     @JoinColumn(name = "plan_id", nullable = false)
     private DatePlan plan;
 
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "place_id", nullable = true)
+    private ExternalVenue place;
+
     @Column(name = "step_order", nullable = false)
     private Integer stepOrder;
 

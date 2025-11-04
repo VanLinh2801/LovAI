@@ -8,6 +8,7 @@ import org.hibernate.type.SqlTypes;
 
 import com.lovai.lovaiapi.model.enums.PlanStatus;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -28,13 +29,13 @@ public class DatePlan {
     private String title;
 
     @Column(name="start_time")
-    private OffsetDateTime startTime;
+    private LocalDateTime startTime;
 
     @Column(name="end_time")
-    private OffsetDateTime endTime;
+    private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition="plan_status_enum", nullable=false)
+    @Column(name="status")
     private PlanStatus status;
 
     @Column(columnDefinition="text")

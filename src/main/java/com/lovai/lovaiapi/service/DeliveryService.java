@@ -106,24 +106,37 @@ public class DeliveryService {
             NotificationResponse notificationResponse = convertToNotificationResponse(notification, recipient);
             
             boolean isUserOnline = isUserOnline(userId);
+            boolean websocketSent = false;
+            boolean pushSent = false;
             
-            if (isUserOnline) {
-                logger.info("User {} is online, sending via WebSocket", userId);
-                webSocketController.sendToUser(userId, notificationResponse);
-                
-                recipient.setDeliveryStatus(DeliveryStatus.DELIVERED);
-                recipient.setDeliveredAt(OffsetDateTime.now());
-                notificationRecipientRepository.save(recipient);
-                
-                eventLogger.logSent(notification, userId);
-                eventLogger.logDelivered(notification, userId);
-                
-                logger.info("Successfully delivered notification {} to user {} via WebSocket", 
-                           notification.getId(), userId);
-            } else {
-                logger.info("User {} is offline, sending via Push notification", userId);
+            // Always send push notification via Firebase
+            try {
+                logger.info("Sending push notification to user {} via Firebase", userId);
                 pushService.sendToUser(userId, notificationResponse);
-                
+                pushSent = true;
+                logger.info("Successfully sent push notification {} to user {} via Firebase", 
+                           notification.getId(), userId);
+            } catch (Exception e) {
+                logger.error("Failed to send push notification {} to user {}: {}", 
+                           notification.getId(), userId, e.getMessage());
+            }
+            
+            // Also send via WebSocket if user is online
+            if (isUserOnline) {
+                try {
+                    logger.info("User {} is online, also sending via WebSocket", userId);
+                    webSocketController.sendToUser(userId, notificationResponse);
+                    websocketSent = true;
+                    logger.info("Successfully sent notification {} to user {} via WebSocket", 
+                               notification.getId(), userId);
+                } catch (Exception e) {
+                    logger.error("Failed to send WebSocket notification {} to user {}: {}", 
+                               notification.getId(), userId, e.getMessage());
+                }
+            }
+            
+            // Mark as delivered if at least one method succeeded
+            if (pushSent || websocketSent) {
                 recipient.setDeliveryStatus(DeliveryStatus.DELIVERED);
                 recipient.setDeliveredAt(OffsetDateTime.now());
                 notificationRecipientRepository.save(recipient);
@@ -131,8 +144,11 @@ public class DeliveryService {
                 eventLogger.logSent(notification, userId);
                 eventLogger.logDelivered(notification, userId);
                 
-                logger.info("Successfully delivered notification {} to user {} via Push", 
-                           notification.getId(), userId);
+                logger.info("Notification {} delivered to user {} - Push: {}, WebSocket: {}", 
+                           notification.getId(), userId, pushSent, websocketSent);
+            } else {
+                // If both failed, throw exception to trigger retry
+                throw new RuntimeException("Both push and WebSocket delivery failed");
             }
             
         } catch (Exception e) {
