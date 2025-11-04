@@ -21,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -98,8 +98,7 @@ public class DatePlanController {
             Notification notification = notificationService.createNotification(notificationRequest);
             deliveryService.sendInAppNotification(notification);
         } catch (Exception e) {
-            System.err.println("Failed to send date plan creation notification: " + e.getMessage());
-            // Don't throw exception to avoid breaking the main flow
+            System.err.println("Failed to send date plan creation notification: " + e.getMessage());    
         }
     }
     
@@ -112,9 +111,7 @@ public class DatePlanController {
                 return;
             }
             
-            OffsetDateTime scheduledAt = datePlan.getStartTime()
-                    .atZone(ZoneId.systemDefault())
-                    .toOffsetDateTime();
+            OffsetDateTime scheduledAt = datePlan.getStartTime().atOffset(ZoneOffset.ofHours(7));
             if (scheduledAt.isBefore(OffsetDateTime.now())) {
                 return;
             }
@@ -154,9 +151,7 @@ public class DatePlanController {
     
     private void rescheduleStartTimeNotification(DatePlanResponse datePlan) {
         try {
-            OffsetDateTime newScheduledAt = datePlan.getStartTime()
-                    .atZone(ZoneId.systemDefault())
-                    .toOffsetDateTime();
+            OffsetDateTime newScheduledAt = datePlan.getStartTime().atOffset(ZoneOffset.ofHours(7));
             if (newScheduledAt.isBefore(OffsetDateTime.now())) {
                 return;
             }
@@ -197,11 +192,9 @@ public class DatePlanController {
             @PathVariable UUID planId,
             @RequestParam UUID coupleId,
             @Valid @RequestBody DatePlanUpdateRequest request) {
-        // Fetch old plan to compare startTime
         DatePlanResponse oldPlan = datePlanService.getDatePlanById(planId, coupleId);
         DatePlanResponse response = datePlanService.updateDatePlan(planId, coupleId, request);
         
-        // If startTime changed, reschedule the start notification
         if (request.getStartTime() != null && (oldPlan.getStartTime() == null || !request.getStartTime().equals(oldPlan.getStartTime()))) {
             rescheduleStartTimeNotification(response);
         }

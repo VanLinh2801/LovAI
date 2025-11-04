@@ -89,6 +89,15 @@ public class NotificationScheduler {
             deliveryService.sendInAppNotification(notification);
             
             logger.info("Successfully queued notification {} for delivery", notification.getId());
+            try {
+                if (notification.getStatus() == NotifStatus.PENDING) {
+                    notification.setStatus(NotifStatus.SENT);
+                    notification.setSentAt(OffsetDateTime.now());
+                    notificationRepository.save(notification);
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to update notification {} to SENT after delivery: {}", notification.getId(), e.getMessage());
+            }
             
         } catch (Exception e) {
             logger.error("Failed to process notification {}: {}", 
