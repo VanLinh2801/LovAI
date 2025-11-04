@@ -23,7 +23,7 @@ public class PushToken {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition="platform_enum", nullable=false)
+    @Column(name="platform")
     private Platform platform;
 
     @Column(nullable=false)

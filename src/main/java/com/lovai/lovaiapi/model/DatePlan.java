@@ -41,10 +41,6 @@ public class DatePlan {
     private String note;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name="place_snapshot", columnDefinition="jsonb")
-    private Map<String,Object> placeSnapshot;
-
-    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name="weather_snapshot", columnDefinition="jsonb")
     private Map<String,Object> weatherSnapshot;
 

@@ -29,7 +29,7 @@ public class ExternalVenue {
     private String externalId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="venue_type", columnDefinition="venue_type_enum", nullable=false)
+    @Column(name="venue_type")
     private VenueType venueType;
 
     @Column(nullable=false)
@@ -42,6 +42,10 @@ public class ExternalVenue {
 
     @Column(precision=2, scale=1)
     private java.math.BigDecimal rating;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name="photo_urls", columnDefinition="jsonb", nullable=false)
+    private List<String> photoUrls;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name="provider_tags", columnDefinition="jsonb", nullable=false)
@@ -61,6 +65,9 @@ public class ExternalVenue {
 
     @Column(name="last_fetched_at")
     private OffsetDateTime lastFetchedAt;
+
+    @Column(name="interacted_at")
+    private OffsetDateTime interactedAt;
 
     @Column(name="created_at", insertable=false, updatable=false)
     private OffsetDateTime createdAt;

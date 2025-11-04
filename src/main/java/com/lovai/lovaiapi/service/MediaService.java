@@ -45,9 +45,9 @@ public class MediaService {
                 .memory(memory)
                 .url(url)
                 .mediaType(mediaType)
-                .width(null) // Có thể extract từ EXIF sau này
-                .height(null) // Có thể extract từ EXIF sau này
-                .exifJson(null) // Có thể extract EXIF data sau này
+                .width(null) 
+                .height(null) 
+                .exifJson(null) 
                 .build();
         
         MemoryMedia savedMedia = memoryMediaRepository.save(memoryMedia);

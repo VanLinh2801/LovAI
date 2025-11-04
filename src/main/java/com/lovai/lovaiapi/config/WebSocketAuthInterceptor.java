@@ -61,23 +61,23 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                                 logger.info("WebSocket authentication successful for user: {} ({})", email, userId);
                             } else {
                                 logger.warn("Invalid JWT token - missing user info");
-                                return null; // Reject connection
+                                return null; 
                             }
                         } else {
                             logger.warn("Invalid JWT token");
-                            return null; // Reject connection
+                            return null; 
                         }
                     } else {
                         logger.warn("Invalid Authorization header format");
-                        return null; // Reject connection
+                        return null; 
                     }
                 } else {
                     logger.warn("No Authorization header found");
-                    return null; // Reject connection
+                    return null; 
                 }
             } catch (Exception e) {
                 logger.error("Error during WebSocket authentication: {}", e.getMessage(), e);
-                return null; // Reject connection
+                return null; 
             }
         }
         
