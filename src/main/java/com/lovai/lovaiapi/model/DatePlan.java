@@ -41,6 +41,9 @@ public class DatePlan {
     @Column(columnDefinition="text")
     private String note;
 
+    @Column(name="budget_estimate")
+    private Integer budgetEstimate;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name="weather_snapshot", columnDefinition="jsonb")
     private Map<String,Object> weatherSnapshot;

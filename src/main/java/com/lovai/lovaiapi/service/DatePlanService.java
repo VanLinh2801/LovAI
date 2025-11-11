@@ -54,6 +54,7 @@ public class DatePlanService {
                 .endTime(request.getEndTime())
                 .status(request.getStatus() != null ? request.getStatus() : PlanStatus.planned)
                 .note(request.getNote())
+                .budgetEstimate(request.getBudgetEstimate())
                 .weatherSnapshot(request.getWeatherSnapshot())
                 .meta(request.getMeta() != null ? request.getMeta() : Map.of())
                 .build();
@@ -130,6 +131,9 @@ public class DatePlanService {
         }
         if (request.getNote() != null) {
             datePlan.setNote(request.getNote());
+        }
+        if (request.getBudgetEstimate() != null) {
+            datePlan.setBudgetEstimate(request.getBudgetEstimate());
         }
         if (request.getWeatherSnapshot() != null) {
             datePlan.setWeatherSnapshot(request.getWeatherSnapshot());
@@ -230,6 +234,7 @@ public class DatePlanService {
                 .endTime(datePlan.getEndTime())
                 .status(datePlan.getStatus())
                 .note(datePlan.getNote())
+                .budgetEstimate(datePlan.getBudgetEstimate())
                 .weatherSnapshot(datePlan.getWeatherSnapshot())
                 .meta(datePlan.getMeta())
                 .createdAt(datePlan.getCreatedAt())

@@ -27,6 +27,7 @@ public class DatePlanResponse {
     
     private PlanStatus status;
     private String note;
+    private Integer budgetEstimate;
     private Map<String, Object> weatherSnapshot;
     private Map<String, Object> meta;
     
