@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  imggen:
+    build: .
+    container_name: imggen
+    ports:
+      - "6001:8000"  # Map host port 6001 to container port 8000
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    volumes:
+      - ./app:/app/app
+      - ./input:/app/input
+      - ./output:/app/output
+    restart: unless-stopped
