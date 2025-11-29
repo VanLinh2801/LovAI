@@ -21,5 +21,11 @@ public interface DatePlanRepository extends JpaRepository<DatePlan, UUID> {
     
     @Query("SELECT COUNT(dp) FROM DatePlan dp WHERE dp.couple.id = :coupleId AND dp.deletedAt IS NULL")
     long countByCoupleId(@Param("coupleId") UUID coupleId);
+    
+    @Query("SELECT COUNT(dp) FROM DatePlan dp WHERE dp.couple.id = :coupleId AND dp.deletedAt IS NULL " +
+           "AND dp.createdAt >= :startDate AND dp.createdAt <= :endDate")
+    long countByCoupleIdAndDateRange(@Param("coupleId") UUID coupleId,
+                                    @Param("startDate") java.time.OffsetDateTime startDate,
+                                    @Param("endDate") java.time.OffsetDateTime endDate);
 }
 

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -253,6 +254,19 @@ public class DatePlanService {
                 .placeId(planStep.getPlace() != null ? planStep.getPlace().getId() : null)
                 .note(planStep.getNote())
                 .build();
+    }
+    
+    @Transactional(readOnly = true)
+    public long countDatePlansInLastMonth(UUID coupleId) {
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime oneMonthAgo = now.minusMonths(1);
+        
+        return datePlanRepository.countByCoupleIdAndDateRange(coupleId, oneMonthAgo, now);
+    }
+    
+    @Transactional(readOnly = true)
+    public long getTotalDatePlansCount(UUID coupleId) {
+        return datePlanRepository.countByCoupleId(coupleId);
     }
 }
 

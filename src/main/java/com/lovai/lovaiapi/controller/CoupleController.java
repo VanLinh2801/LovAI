@@ -162,4 +162,13 @@ public class CoupleController {
         
         return ResponseEntity.ok(Map.of("message", "Rời couple thành công"));
     }
+    
+    @GetMapping("/statistics/days-since-created")
+    public ResponseEntity<Map<String, Object>> getDaysSinceCoupleCreated(@RequestParam UUID coupleId) {
+        long days = coupleService.getDaysSinceCoupleCreated(coupleId);
+        return ResponseEntity.ok(Map.of(
+            "coupleId", coupleId,
+            "days", days
+        ));
+    }
 }

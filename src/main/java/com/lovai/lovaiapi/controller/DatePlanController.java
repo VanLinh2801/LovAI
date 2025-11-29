@@ -233,5 +233,24 @@ public class DatePlanController {
             "message", "Plan step deleted successfully"
         ));
     }
+    
+    @GetMapping("/statistics/last-month")
+    public ResponseEntity<Map<String, Object>> getDatePlansCountInLastMonth(@RequestParam UUID coupleId) {
+        long count = datePlanService.countDatePlansInLastMonth(coupleId);
+        return ResponseEntity.ok(Map.of(
+            "coupleId", coupleId,
+            "count", count,
+            "period", "last_month"
+        ));
+    }
+    
+    @GetMapping("/statistics/total")
+    public ResponseEntity<Map<String, Object>> getTotalDatePlansCount(@RequestParam UUID coupleId) {
+        long count = datePlanService.getTotalDatePlansCount(coupleId);
+        return ResponseEntity.ok(Map.of(
+            "coupleId", coupleId,
+            "totalCount", count
+        ));
+    }
 }
 

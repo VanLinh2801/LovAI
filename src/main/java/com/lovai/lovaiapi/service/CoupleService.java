@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -357,5 +358,18 @@ public class CoupleService {
         response.setInvitee(inviteeResponse);
 
         return response;
+    }
+    
+    @Transactional(readOnly = true)
+    public long getDaysSinceCoupleCreated(UUID coupleId) {
+        Couple couple = coupleRepository.findById(coupleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Couple không tồn tại"));
+        
+        if (couple.getCreatedAt() == null) {
+            return 0;
+        }
+        
+        OffsetDateTime now = OffsetDateTime.now();
+        return ChronoUnit.DAYS.between(couple.getCreatedAt(), now);
     }
 }
