@@ -1,5 +1,7 @@
 package com.example.lovai.Frag;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -12,9 +14,17 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.lovai.API.RetrofitClient;
+import com.example.lovai.API.UserApi;
+import com.example.lovai.DTO.User.UserResponse;
 import com.example.lovai.Model.User;
 import com.example.lovai.R;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -25,6 +35,8 @@ public class ProfileFragment extends Fragment {
     private TextView txtName, txtEmail, txtPhone, txtBirthday;
     private Button btnEditProfile;
     private User currentUser;
+
+    private UserApi userApi;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -61,41 +73,39 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
-
-        ImageButton btnBack = view.findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> {
-            getParentFragmentManager().popBackStack();
-        });
-
         txtName = view.findViewById(R.id.txtName);
         txtEmail = view.findViewById(R.id.txtEmail);
         txtPhone = view.findViewById(R.id.txtPhone);
         txtBirthday = view.findViewById(R.id.txtBirthday);
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
 
-        currentUser = new User("Nguyễn Văn A", "example@gmail.com", "0123456789", "01/01/2000");
-        loadUserData();
+        userApi = RetrofitClient.getUserApi(requireContext());
+        loadUserProfile();
 
-        btnEditProfile.setOnClickListener(v->{
-            EditProfileFragment editFragment = new EditProfileFragment();
-
-            Bundle args = new Bundle();
-            args.putString("name", currentUser.getName());
-            args.putString("email", currentUser.getEmail());
-            args.putString("phone", currentUser.getPhone());
-            args.putString("birthday", currentUser.getBirthday());
-
-            NavController navController = Navigation.findNavController(requireActivity(), R.id.fragmentContainerView);
-            navController.navigate(R.id.editProfileFragment, args);
-        });
 
         return view;
     }
 
-    private void loadUserData() {
-        txtName.setText(currentUser.getName());
-        txtEmail.setText(currentUser.getEmail());
-        txtPhone.setText(currentUser.getPhone());
-        txtBirthday.setText(currentUser.getBirthday());
+    public void loadUserProfile(){
+        SharedPreferences prefs = requireActivity().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE);
+        String userId = prefs.getString("userId", null);
+        userApi.getUserById(userId).enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                if(response.isSuccessful() && response.body()!=null){
+                    UserResponse user = response.body();
+                    txtName.setText(user.getName());
+                    txtEmail.setText(user.getEmail());
+                    txtPhone.setText(user.getGender());
+                    txtBirthday.setText(user.getDateOfBirth());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserResponse> call, Throwable t) {
+                Toast.makeText(getContext(), "Connection Errors: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 }

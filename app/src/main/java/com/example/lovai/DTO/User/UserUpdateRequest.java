@@ -1,20 +1,15 @@
-package com.example.lovai.DTO;
+package com.example.lovai.DTO.User;
 
-import java.util.UUID;
-
-public class UserResponse {
-    private UUID id;
-    private String email;
+public class UserUpdateRequest {
     private String name;
     private String gender;
     private String dateOfBirth;
 
-    // getters & setters
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public UserUpdateRequest(String name, String gender, String dateOfBirth) {
+        this.name = name;
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
+    }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -24,4 +19,5 @@ public class UserResponse {
 
     public String getDateOfBirth() { return dateOfBirth; }
     public void setDateOfBirth(String dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+
 }

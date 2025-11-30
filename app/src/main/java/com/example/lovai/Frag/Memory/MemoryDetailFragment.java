@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.FileUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,10 @@ import com.example.lovai.R;
 import com.example.lovai.Ultis.FileUltis;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,6 +97,27 @@ public class MemoryDetailFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerViewMedia);
         adapter = new MemoryMediaAdapter(mediaList);
+
+        // Thêm click listener để hiển thị dialog preview ảnh
+        adapter.setOnMediaClickListener(imageUrl -> {
+            ImagePreviewDialog dialog = ImagePreviewDialog.newInstance(imageUrl);
+
+            // Sử dụng getChildFragmentManager() vì container nằm trong view của fragment này
+            // Container đã được đảm bảo tồn tại trong layout
+            getChildFragmentManager()
+                    .beginTransaction()
+                    // Thêm hiệu ứng cho mượt
+                    .setCustomAnimations(
+                            android.R.anim.fade_in,
+                            android.R.anim.fade_out,
+                            android.R.anim.fade_in,
+                            android.R.anim.fade_out
+                    )
+                    .add(R.id.imagePreviewDialog, dialog)
+                    .addToBackStack("ImagePreviewDialog")
+                    .commit();
+        });
+
         recyclerView.setLayoutManager(new GridLayoutManager(requireContext(),3));
         recyclerView.setAdapter(adapter);
 
@@ -105,7 +130,6 @@ public class MemoryDetailFragment extends Fragment {
         }
 
         loadMedia(memoryId, coupleId);
-
         FloatingActionButton btnUpload = view.findViewById(R.id.btnUpload);
         btnUpload.setOnClickListener(v -> openGallery());
 
@@ -140,74 +164,118 @@ public class MemoryDetailFragment extends Fragment {
         return prefs.getString("coupleId", null);
     }
 
-    private static final int PICK_IMAGE_REQUEST = 1001;
+    private static final int PICK_IMAGE_REQUEST = 1;
 
     private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK); //chọn dữ liệu
+        Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
 
-    // goi callback cua he thong
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == PICK_IMAGE_REQUEST && resultCode == getActivity().RESULT_OK && data != null){
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == getActivity().RESULT_OK && data != null) {
             Uri imageUri = data.getData();
             if (imageUri != null) {
-                uploadMedia(imageUri);
+                uploadImageToServer(imageUri);
             }
         }
     }
 
-    private void uploadMedia(Uri imageUri) {
-        try {
-            String memoryId = getArguments().getString("memoryId");
-            if (memoryId == null) {
-                Toast.makeText(getContext(), "Thiếu memoryId", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Convert URI -> File
-            String filePath = FileUltis.getPath(requireContext(), imageUri);
-            if (filePath == null) {
-                Toast.makeText(getContext(), "Không thể lấy đường dẫn file", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            File file = new File(filePath);
-
-            // Tạo body parts
-            RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
-            MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
-            RequestBody memoryIdPart = RequestBody.create(MediaType.parse("text/plain"), memoryId);
-            RequestBody folderPart = RequestBody.create(MediaType.parse("text/plain"), "memories");
-
-            // Gọi API
-            MemoryApi memoryApi = RetrofitClient.getMemoryApi(requireContext());
-            memoryApi.uploadMedia(filePart, memoryIdPart, folderPart).enqueue(new Callback<MemoryMediaResponse>() {
-                @Override
-                public void onResponse(Call<MemoryMediaResponse> call, Response<MemoryMediaResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        Toast.makeText(getContext(), "Upload thành công!", Toast.LENGTH_SHORT).show();
-                        loadMedia(memoryId, getCurrentCoupleId()); // reload list
-                    } else {
-                        Toast.makeText(getContext(), "Upload thất bại: " + response.code(), Toast.LENGTH_SHORT).show();
-                    }
+        private void uploadImageToServer(Uri imageUri) {
+            try {
+                String memoryId = getArguments().getString("memoryId");
+                if (memoryId == null) {
+                    Toast.makeText(getContext(), "Missing memoryId", Toast.LENGTH_SHORT).show();
+                    return;
                 }
 
-                @Override
-                public void onFailure(Call<MemoryMediaResponse> call, Throwable t) {
-                    Toast.makeText(getContext(), "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                // Đọc InputStream từ URI
+                InputStream inputStream = requireContext().getContentResolver().openInputStream(imageUri);
+                if (inputStream == null) {
+                    Toast.makeText(getContext(), "Không thể đọc ảnh", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Upload lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                // Đọc thành mảng byte
+                byte[] bytes = getBytes(inputStream);
+                Log.d("UPLOAD_DEBUG", "File size read: " + bytes.length + " bytes");
+
+                // Xác định MIME type thực (vd: image/jpeg, image/png)
+                String mimeType = requireContext().getContentResolver().getType(imageUri);
+                if (mimeType == null) mimeType = "image/jpeg"; // fallback an toàn
+                Log.d("UPLOAD_DEBUG", "MimeType = " + mimeType);
+
+                // Tạo RequestBody cho file
+                RequestBody requestFile = RequestBody.create(MediaType.parse(mimeType), bytes);
+
+                // Tạo MultipartBody.Part với tên file rõ ràng
+                String fileName = "upload_" + System.currentTimeMillis() + ".jpg";
+                MultipartBody.Part filePart =
+                        MultipartBody.Part.createFormData("file", fileName, requestFile);
+                Log.d("UPLOAD_DEBUG", "FilePart header = " + filePart.headers());
+
+                
+                // Các field text
+                RequestBody memoryIdBody =
+                        RequestBody.create(MediaType.parse("text/plain"), memoryId);
+                RequestBody folderBody =
+                        RequestBody.create(MediaType.parse("text/plain"), "First Memories");
+
+                Log.d("UPLOAD_DEBUG", "Upload to /api/v1/media/upload");
+                Log.d("UPLOAD_DEBUG", "MemoryId = " + memoryId);
+                Log.d("UPLOAD_DEBUG", "Folder = First Memories");
+
+                // Gọi API upload
+                MemoryApi memoryApi = RetrofitClient.getMemoryApi(requireContext());
+                memoryApi.uploadMedia(filePart, memoryIdBody, folderBody)
+                        .enqueue(new Callback<MemoryMediaResponse>() {
+                            @Override
+                            public void onResponse(Call<MemoryMediaResponse> call, Response<MemoryMediaResponse> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    MemoryMediaResponse uploaded = response.body();
+                                    mediaList.add(uploaded);
+                                    adapter.notifyItemInserted(mediaList.size() - 1);
+                                    Toast.makeText(getContext(), "Upload thành công!", Toast.LENGTH_SHORT).show();
+                                    Log.d("UPLOAD_SUCCESS", "Ảnh upload URL: " + uploaded.getUrl());
+                                } else {
+                                    try {
+                                        String err = response.errorBody() != null ? response.errorBody().string() : "null";
+                                        Log.e("UPLOAD_ERROR", " Code: " + response.code() + " | body: " + err);
+                                        Toast.makeText(getContext(), "Upload thất bại: " + response.code(), Toast.LENGTH_SHORT).show();
+                                    } catch (IOException e) {
+                                        Log.e("UPLOAD_ERROR", "Không đọc được errorBody", e);
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<MemoryMediaResponse> call, Throwable t) {
+                                Log.e("UPLOAD_ERROR", "🚨 Lỗi kết nối: " + t.getMessage(), t);
+                                Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+            } catch (Exception e) {
+                Log.e("UPLOAD_EXCEPTION", "⚠️ " + e.getMessage(), e);
+                Toast.makeText(getContext(), "Lỗi khi upload ảnh", Toast.LENGTH_SHORT).show();
+            }
         }
-    }
 
+
+
+
+        private byte[] getBytes(InputStream inputStream) throws IOException {
+            ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+            int bufferSize = 1024;
+            byte[] buffer = new byte[bufferSize];
+            int len;
+            while ((len = inputStream.read(buffer)) != -1) {
+                byteBuffer.write(buffer, 0, len);
+            }
+            return byteBuffer.toByteArray();
+        }
 
 }
-
-

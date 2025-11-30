@@ -2,7 +2,9 @@ package com.example.lovai;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,10 +17,12 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.lovai.API.PushTokenApi;
 import com.example.lovai.API.RetrofitClient;
 import com.example.lovai.API.UserApi;
 import com.example.lovai.DTO.LoginRequest;
 import com.example.lovai.DTO.LoginResponse;
+import com.example.lovai.DTO.PushToken.PushTokenRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -29,6 +33,9 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.messaging.FirebaseMessaging;
+
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -89,7 +96,7 @@ public class LoginActivity extends AppCompatActivity {
                         editor.putString("email",loginRes.getEmail());
                         editor.putString("name",loginRes.getName());
                         editor.apply();
-
+                        registerPushToken();
 
                         Toast.makeText(LoginActivity.this, "Login Successfully", Toast.LENGTH_SHORT).show();
 
@@ -105,6 +112,8 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
         });
+
+
 
 //        SignUp
         tvSignUp=findViewById(R.id.textView8);
@@ -150,13 +159,13 @@ public class LoginActivity extends AppCompatActivity {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
                             // Lưu thông tin user vào SharedPreferences
-                            SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = prefs.edit();
-                            editor.putString("email", user.getEmail());
-                            editor.putString("name", user.getDisplayName());
-                            editor.putString("photoUrl", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
-                            editor.apply();
-
+//                            SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+//                            SharedPreferences.Editor editor = prefs.edit();
+//                            editor.putString("email", user.getEmail());
+//                            editor.putString("name", user.getDisplayName());
+//                            editor.putString("photoUrl", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
+//                            editor.apply();
+                            registerPushToken();
                             Toast.makeText(LoginActivity.this, "Google Login Successful!", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(LoginActivity.this, MainActivity.class));
                             finish();
@@ -166,6 +175,94 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    private void registerPushToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.e("FCM_TOKEN", "Không thể lấy token FCM", task.getException());
+                        Toast.makeText(LoginActivity.this, "Không thể lấy token FCM", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String token = task.getResult();
+                    Log.d("FCM_TOKEN", "Token lấy được: " + token);
+
+                    SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+                    String userId = prefs.getString("userId", null);
+
+                    if (userId != null && token != null) {
+                        String deviceId = Build.MODEL;
+                        PushTokenRequest request = new PushTokenRequest(token, "android", deviceId);
+                        PushTokenApi pushTokenApi = RetrofitClient.getPushTokenApi(LoginActivity.this);
+                        Log.d("FCM_TOKEN", "Đang gửi token lên server...");
+                        Log.d("FCM_TOKEN", "UserId: " + userId + " | Device: " + deviceId);
+
+                        pushTokenApi.registerPushToken(userId, request).enqueue(new Callback<Map<String, String>>() {
+                            @Override
+                            public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
+                                if (response.isSuccessful()) {
+                                    Log.d("FCM_TOKEN", "Đăng ký token thành công, response: " + response.body());
+                                    Toast.makeText(LoginActivity.this, "Đăng ký token thành công", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Log.e("FCM_TOKEN", "Đăng ký token thất bại. Mã lỗi: " + response.code() +
+                                            ", Nội dung: " + response.errorBody());
+                                    Toast.makeText(LoginActivity.this, "Đăng ký token thất bại (server)", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<Map<String, String>> call, Throwable t) {
+                                Log.e("FCM_TOKEN", "Lỗi kết nối server: " + t.getMessage(), t);
+                                Toast.makeText(LoginActivity.this, "Lỗi kết nối server: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        Log.w("FCM_TOKEN", "Thiếu userId hoặc token. userId=" + userId + ", token=" + token);
+                        Toast.makeText(LoginActivity.this, "Thiếu userId hoặc token", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+
+
+//    private void registerPushToken() {
+//        FirebaseMessaging.getInstance().getToken()
+//                .addOnCompleteListener(task -> {
+//                    if (!task.isSuccessful()) {
+//                        Toast.makeText(LoginActivity.this, "Không thể lấy token FCM", Toast.LENGTH_SHORT).show();
+//                        return;
+//                    }
+//
+//                    String token = task.getResult();
+//                    SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+//                    String userId = prefs.getString("userId", null);
+//
+//                    if (userId != null && token != null) {
+//                        String deviceId = Build.MODEL;
+//                        PushTokenRequest request = new PushTokenRequest(token, "android", deviceId);
+//                        PushTokenApi pushTokenApi = RetrofitClient.getPushTokenApi(LoginActivity.this);
+//
+//                        pushTokenApi.registerPushToken(userId, request).enqueue(new Callback<Map<String, String>>() {
+//                            @Override
+//                            public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
+//                                if (response.isSuccessful()) {
+//                                    Toast.makeText(LoginActivity.this, "Đăng ký token thành công", Toast.LENGTH_SHORT).show();
+//                                } else {
+//                                    Toast.makeText(LoginActivity.this, "Đăng ký token thất bại (server)", Toast.LENGTH_SHORT).show();
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onFailure(Call<Map<String, String>> call, Throwable t) {
+//                                Toast.makeText(LoginActivity.this, "Lỗi kết nối server: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+//                            }
+//                        });
+//                    } else {
+//                        Toast.makeText(LoginActivity.this, "Thiếu userId hoặc token", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+//    }
 
 
 

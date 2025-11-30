@@ -33,14 +33,16 @@
             android:paddingBottom="8dp"
             tools:listitem="@layout/item_memory" />
 
-        <!-- Nút thêm kỷ niệm -->
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabAddMemory"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom"
-            android:contentDescription="Add memory"
-            android:layout_margin="16dp" />
+
     </LinearLayout>
+
+    <!-- Nút thêm kỷ niệm -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddMemory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:contentDescription="Add memory"
+        android:layout_margin="16dp" />
 
 </FrameLayout>

@@ -19,9 +19,12 @@ public class MemoryMediaAdapter extends RecyclerView.Adapter<MemoryMediaAdapter.
     private OnMediaClickListener listener;
 
     public interface OnMediaClickListener {
-        void onMediaClick(int position);
+        void onMediaClick(String imageUrl);
     }
 
+    public void setOnMediaClickListener(OnMediaClickListener listener){
+        this.listener = listener;
+    }
     public MemoryMediaAdapter(List<MemoryMediaResponse> mediaList){
         this.mediaList = mediaList;
     }
@@ -40,10 +43,11 @@ public class MemoryMediaAdapter extends RecyclerView.Adapter<MemoryMediaAdapter.
         Glide.with(holder.imageView.getContext())
                 .load(media.getUrl())
                 .placeholder(R.drawable.couplemiy)
-                .into(holder.imageView); //Hiển thị
+                .into(holder.imageView);
 
-
-        holder.imageView.setOnClickListener(v -> listener.onMediaClick(position));
+        holder.imageView.setOnClickListener(v -> {
+            if (listener != null) listener.onMediaClick(media.getUrl());
+        });
 
     }
     @Override
@@ -53,7 +57,7 @@ public class MemoryMediaAdapter extends RecyclerView.Adapter<MemoryMediaAdapter.
         this.mediaList = mediaList;
         notifyDataSetChanged(); // gọi lại tuần tự getItemCount(), onCreateView..., onBindViewHolder
     }
-
+    
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         public ViewHolder(View itemView) {

@@ -30,7 +30,7 @@ public class MemoryAdapter extends RecyclerView.Adapter<MemoryAdapter.MemoryView
     @Override
     public MemoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_memory, parent, false);
-        return new MemoryViewHolder(view); //khung chua
+        return new MemoryViewHolder(view);
     }
 
     @Override
@@ -68,6 +68,6 @@ public class MemoryAdapter extends RecyclerView.Adapter<MemoryAdapter.MemoryView
             tvDate = itemView.findViewById(R.id.tvMemoryDate);
             tvDesc = itemView.findViewById(R.id.tvMemoryDesc);
             imgMemory = itemView.findViewById(R.id.imgMemory);
-        } // lop dai dien
+        }
     }
 }

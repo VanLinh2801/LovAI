@@ -18,12 +18,11 @@ import android.widget.Toast;
 
 import com.example.lovai.API.CoupleApi;
 import com.example.lovai.API.RetrofitClient;
-import com.example.lovai.DTO.CoupleResponse;
-import com.example.lovai.DTO.CreateCoupleWithPartnerRequest;
+import com.example.lovai.DTO.Couple.CoupleResponse;
+import com.example.lovai.DTO.Couple.CreateCoupleWithPartnerRequest;
 import com.example.lovai.DTO.PartnerRequest;
 import com.example.lovai.DTO.UpdateCoupleRequest;
 import com.example.lovai.R;
-import com.example.lovai.SignUp;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -100,7 +99,12 @@ public class EditCoupleFragment extends Fragment {
         edtUserId = view.findViewById(R.id.edtUserId);
         edtPartnerName = view.findViewById(R.id.edtPartnerName);
         genderSpinner = view.findViewById(R.id.spinnerGender);
-        ArrayAdapter<CharSequence> adapter= ArrayAdapter.createFromResource(requireContext(),R.array.gender_options,android.R.layout.simple_spinner_item);
+        String[] genderOptions = getResources().getStringArray(R.array.gender_options);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                genderOptions
+        );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         genderSpinner.setAdapter(adapter);
         edtPartnerDob = view.findViewById(R.id.edtPartnerDob);
@@ -175,6 +179,10 @@ public class EditCoupleFragment extends Fragment {
         String title = edtCoupleName.getText().toString().trim();
         String anniversaryDate = edtAnniversaryDate.getText().toString().trim();
         String partnerName = edtPartnerName.getText().toString().trim();
+        if (partnerName.isEmpty()) {
+            Toast.makeText(requireContext(), "Please enter your lover's name 💕", Toast.LENGTH_SHORT).show();
+            return;
+        }
         String partnerGender = genderSpinner.getSelectedItem().toString().trim();
         String partnerDob = edtPartnerDob.getText().toString().trim();
 

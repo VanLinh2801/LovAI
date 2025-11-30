@@ -85,6 +85,7 @@ public class MemoryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_memory, container, false);
         recyclerView = view.findViewById(R.id.recyclerViewMemories);
         fabAddMemory = view.findViewById(R.id.fabAddMemory);
+
         memoryAdapter = new MemoryAdapter(memoryList, new MemoryAdapter.OnMemoryClickListener() {
             @Override
             public void onMemoryClick(MemoryResponse memory) {
