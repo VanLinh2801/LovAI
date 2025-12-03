@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 @Service
 public class OpenWeatherService {
@@ -47,10 +48,12 @@ public class OpenWeatherService {
             String response = restTemplate.getForObject(url, String.class);
             JsonNode jsonNode = objectMapper.readTree(response);
 
+            String locationName = extractLocationName(jsonNode);
+            List<Map<String, Object>> simplifiedForecast = extractSimplifiedForecastList(jsonNode);
+
             Map<String, Object> result = new HashMap<>();
-            result.put("location", extractLocation(jsonNode));
-            result.put("forecast", extractForecast(jsonNode));
-            result.put("fetchedAt", System.currentTimeMillis());
+            result.put("location", locationName);
+            result.put("forecast", simplifiedForecast);
 
             return result;
         } catch (Exception e) {
@@ -58,87 +61,32 @@ public class OpenWeatherService {
         }
     }
 
-    private Map<String, Object> extractLocation(JsonNode root) {
-        Map<String, Object> location = new HashMap<>();
+    private String extractLocationName(JsonNode root) {
         JsonNode cityNode = root.get("city");
         if (cityNode != null) {
-            location.put("name", cityNode.has("name") ? cityNode.get("name").asText() : null);
-            location.put("country", cityNode.has("country") ? cityNode.get("country").asText() : null);
-            if (cityNode.has("coord")) {
-                JsonNode coord = cityNode.get("coord");
-                location.put("lat", coord.has("lat") ? coord.get("lat").asDouble() : null);
-                location.put("lon", coord.has("lon") ? coord.get("lon").asDouble() : null);
-            }
+            return cityNode.has("name") ? cityNode.get("name").asText() : null;
         }
-        return location;
+        return null;
     }
 
-    private List<Map<String, Object>> extractForecast(JsonNode root) {
+    private List<Map<String, Object>> extractSimplifiedForecastList(JsonNode root) {
         List<Map<String, Object>> forecastList = new ArrayList<>();
+        Map<String, Map<String, Object>> byDate = new TreeMap<>();
         JsonNode listNode = root.get("list");
         
         if (listNode != null && listNode.isArray()) {
             for (JsonNode item : listNode) {
-                Map<String, Object> forecast = new HashMap<>();
-                
-                forecast.put("datetime", item.has("dt") ? item.get("dt").asLong() : null);
-                forecast.put("datetimeText", item.has("dt_txt") ? item.get("dt_txt").asText() : null);
-                
-                if (item.has("main")) {
-                    JsonNode main = item.get("main");
-                    Map<String, Object> mainData = new HashMap<>();
-                    mainData.put("temp", main.has("temp") ? main.get("temp").asDouble() : null);
-                    mainData.put("feelsLike", main.has("feels_like") ? main.get("feels_like").asDouble() : null);
-                    mainData.put("tempMin", main.has("temp_min") ? main.get("temp_min").asDouble() : null);
-                    mainData.put("tempMax", main.has("temp_max") ? main.get("temp_max").asDouble() : null);
-                    mainData.put("pressure", main.has("pressure") ? main.get("pressure").asInt() : null);
-                    mainData.put("humidity", main.has("humidity") ? main.get("humidity").asInt() : null);
-                    forecast.put("main", mainData);
+                Map<String, Object> simplified = extractSimplifiedForecastItem(item);
+                String date = (String) simplified.get("targetDate");
+                if (date == null) continue;
+                if (!byDate.containsKey(date)) {
+                    byDate.put(date, simplified);
+                    if (byDate.size() >= 7) break;
                 }
-                
-                if (item.has("weather") && item.get("weather").isArray() && item.get("weather").size() > 0) {
-                    JsonNode weather = item.get("weather").get(0);
-                    Map<String, Object> weatherData = new HashMap<>();
-                    weatherData.put("id", weather.has("id") ? weather.get("id").asInt() : null);
-                    weatherData.put("main", weather.has("main") ? weather.get("main").asText() : null);
-                    weatherData.put("description", weather.has("description") ? weather.get("description").asText() : null);
-                    weatherData.put("icon", weather.has("icon") ? weather.get("icon").asText() : null);
-                    forecast.put("weather", weatherData);
-                }
-                
-                if (item.has("wind")) {
-                    JsonNode wind = item.get("wind");
-                    Map<String, Object> windData = new HashMap<>();
-                    windData.put("speed", wind.has("speed") ? wind.get("speed").asDouble() : null);
-                    windData.put("deg", wind.has("deg") ? wind.get("deg").asInt() : null);
-                    forecast.put("wind", windData);
-                }
-                
-                if (item.has("clouds")) {
-                    JsonNode clouds = item.get("clouds");
-                    Map<String, Object> cloudsData = new HashMap<>();
-                    cloudsData.put("all", clouds.has("all") ? clouds.get("all").asInt() : null);
-                    forecast.put("clouds", cloudsData);
-                }
-                
-                if (item.has("rain")) {
-                    JsonNode rain = item.get("rain");
-                    Map<String, Object> rainData = new HashMap<>();
-                    rainData.put("3h", rain.has("3h") ? rain.get("3h").asDouble() : null);
-                    forecast.put("rain", rainData);
-                }
-                
-                if (item.has("snow")) {
-                    JsonNode snow = item.get("snow");
-                    Map<String, Object> snowData = new HashMap<>();
-                    snowData.put("3h", snow.has("3h") ? snow.get("3h").asDouble() : null);
-                    forecast.put("snow", snowData);
-                }
-                
-                forecastList.add(forecast);
             }
         }
-        
+
+        forecastList.addAll(byDate.values());
         return forecastList;
     }
     
@@ -172,10 +120,9 @@ public class OpenWeatherService {
             Map<String, Object> closestForecast = findClosestForecast(jsonNode, targetTimestamp);
             
             Map<String, Object> result = new HashMap<>();
-            result.put("location", extractLocation(jsonNode));
-            result.put("forecast", closestForecast);
-            result.put("targetDateTime", targetDateTime.toString());
-            result.put("fetchedAt", System.currentTimeMillis());
+            result.put("location", extractLocationName(jsonNode));
+            result.put("targetDate", closestForecast.get("targetDate"));
+            result.put("forecast", closestForecast.get("forecast"));
 
             return result;
         } catch (Exception e) {
@@ -196,7 +143,7 @@ public class OpenWeatherService {
                     
                     if (diff < minDiff) {
                         minDiff = diff;
-                        closestForecast = extractForecastItem(item);
+                        closestForecast = extractSimplifiedForecastItem(item);
                     }
                 }
             }
@@ -205,64 +152,39 @@ public class OpenWeatherService {
         return closestForecast != null ? closestForecast : new HashMap<>();
     }
     
-    private Map<String, Object> extractForecastItem(JsonNode item) {
-        Map<String, Object> forecast = new HashMap<>();
-        
-        forecast.put("datetime", item.has("dt") ? item.get("dt").asLong() : null);
-        forecast.put("datetimeText", item.has("dt_txt") ? item.get("dt_txt").asText() : null);
-        
-        if (item.has("main")) {
-            JsonNode main = item.get("main");
-            Map<String, Object> mainData = new HashMap<>();
-            mainData.put("temp", main.has("temp") ? main.get("temp").asDouble() : null);
-            mainData.put("feelsLike", main.has("feels_like") ? main.get("feels_like").asDouble() : null);
-            mainData.put("tempMin", main.has("temp_min") ? main.get("temp_min").asDouble() : null);
-            mainData.put("tempMax", main.has("temp_max") ? main.get("temp_max").asDouble() : null);
-            mainData.put("pressure", main.has("pressure") ? main.get("pressure").asInt() : null);
-            mainData.put("humidity", main.has("humidity") ? main.get("humidity").asInt() : null);
-            forecast.put("main", mainData);
+    private Map<String, Object> extractSimplifiedForecastItem(JsonNode item) {
+        Map<String, Object> result = new HashMap<>();
+
+        String dateText = null;
+        if (item.has("dt_txt")) {
+            String dtTxt = item.get("dt_txt").asText();
+            if (dtTxt != null && dtTxt.length() >= 10) {
+                dateText = dtTxt.substring(0, 10);
+            }
+        } else if (item.has("dt")) {
+            long epoch = item.get("dt").asLong();
+            dateText = LocalDateTime.ofEpochSecond(epoch, 0, ZoneOffset.UTC).toLocalDate().toString();
         }
-        
+        result.put("targetDate", dateText);
+
+        Map<String, Object> forecast = new HashMap<>();
+
         if (item.has("weather") && item.get("weather").isArray() && item.get("weather").size() > 0) {
             JsonNode weather = item.get("weather").get(0);
-            Map<String, Object> weatherData = new HashMap<>();
-            weatherData.put("id", weather.has("id") ? weather.get("id").asInt() : null);
-            weatherData.put("main", weather.has("main") ? weather.get("main").asText() : null);
-            weatherData.put("description", weather.has("description") ? weather.get("description").asText() : null);
-            weatherData.put("icon", weather.has("icon") ? weather.get("icon").asText() : null);
-            forecast.put("weather", weatherData);
+            String description = weather.has("description") ? weather.get("description").asText() : null;
+            forecast.put("description", description);
         }
-        
-        if (item.has("wind")) {
-            JsonNode wind = item.get("wind");
-            Map<String, Object> windData = new HashMap<>();
-            windData.put("speed", wind.has("speed") ? wind.get("speed").asDouble() : null);
-            windData.put("deg", wind.has("deg") ? wind.get("deg").asInt() : null);
-            forecast.put("wind", windData);
+
+        if (item.has("main")) {
+            JsonNode main = item.get("main");
+            Double temp = main.has("temp") ? main.get("temp").asDouble() : null;
+            Integer humidity = main.has("humidity") ? main.get("humidity").asInt() : null;
+            forecast.put("temp", temp);
+            forecast.put("humidity", humidity);
         }
-        
-        if (item.has("clouds")) {
-            JsonNode clouds = item.get("clouds");
-            Map<String, Object> cloudsData = new HashMap<>();
-            cloudsData.put("all", clouds.has("all") ? clouds.get("all").asInt() : null);
-            forecast.put("clouds", cloudsData);
-        }
-        
-        if (item.has("rain")) {
-            JsonNode rain = item.get("rain");
-            Map<String, Object> rainData = new HashMap<>();
-            rainData.put("3h", rain.has("3h") ? rain.get("3h").asDouble() : null);
-            forecast.put("rain", rainData);
-        }
-        
-        if (item.has("snow")) {
-            JsonNode snow = item.get("snow");
-            Map<String, Object> snowData = new HashMap<>();
-            snowData.put("3h", snow.has("3h") ? snow.get("3h").asDouble() : null);
-            forecast.put("snow", snowData);
-        }
-        
-        return forecast;
+
+        result.put("forecast", forecast);
+        return result;
     }
 }
 

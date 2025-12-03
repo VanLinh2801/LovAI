@@ -55,6 +55,15 @@ public interface MemoryRepository extends JpaRepository<Memory, UUID> {
            "OR LOWER(m.description) LIKE LOWER(CONCAT('%', :searchText, '%'))) " +
            "ORDER BY m.happenedAt DESC")
     List<Memory> findByCoupleIdAndSearchTextWithPagination(@Param("coupleId") UUID coupleId, 
-                                                          @Param("searchText") String searchText,
-                                                          org.springframework.data.domain.Pageable pageable);
+                                                           @Param("searchText") String searchText,
+                                                           org.springframework.data.domain.Pageable pageable);
+    
+    @Query("SELECT COALESCE(SUM(m.mediaCount), 0) FROM Memory m WHERE m.couple.id = :coupleId AND m.deletedAt IS NULL")
+    long sumMediaCountByCoupleId(@Param("coupleId") UUID coupleId);
+    
+    @Query("SELECT COALESCE(SUM(m.mediaCount), 0) FROM Memory m WHERE m.couple.id = :coupleId AND m.deletedAt IS NULL " +
+           "AND m.happenedAt BETWEEN :startDate AND :endDate")
+    long sumMediaCountByCoupleIdAndDateRange(@Param("coupleId") UUID coupleId,
+                                             @Param("startDate") java.time.OffsetDateTime startDate,
+                                             @Param("endDate") java.time.OffsetDateTime endDate);
 }

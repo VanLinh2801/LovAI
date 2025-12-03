@@ -220,6 +220,27 @@ public class MemoryService {
                 .build();
     }
     
+    @Transactional(readOnly = true)
+    public long countMemoriesInLastMonth(UUID coupleId) {
+        LocalDate today = LocalDate.now(ZoneOffset.UTC);
+        LocalDate oneMonthAgo = today.minusMonths(1);
+        OffsetDateTime startDateTime = oneMonthAgo.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime();
+        OffsetDateTime endDateTime = today.atTime(23, 59, 59, 999_999_999).atOffset(ZoneOffset.UTC);
+        return memoryRepository.countByCoupleIdAndDateRange(coupleId, startDateTime, endDateTime);
+    }
+    
+    @Transactional(readOnly = true)
+    public long countMemoryMediaByCoupleId(UUID coupleId) {
+        return memoryRepository.sumMediaCountByCoupleId(coupleId);
+    }
+    
+    @Transactional(readOnly = true)
+    public long countMemoryMediaInDateRange(UUID coupleId, LocalDate startDate, LocalDate endDate) {
+        OffsetDateTime startDateTime = startDate.atStartOfDay(ZoneOffset.UTC).toOffsetDateTime();
+        OffsetDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999).atOffset(ZoneOffset.UTC);
+        return memoryRepository.sumMediaCountByCoupleIdAndDateRange(coupleId, startDateTime, endDateTime);
+    }
+    
     public void updateMediaCount(UUID memoryId, int mediaCount) {
         Memory memory = memoryRepository.findById(memoryId)
                 .orElseThrow(() -> new NotFoundException("Memory not found"));

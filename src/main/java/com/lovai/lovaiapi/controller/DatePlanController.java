@@ -13,6 +13,7 @@ import com.lovai.lovaiapi.repository.CoupleRepository;
 import com.lovai.lovaiapi.service.DatePlanService;
 import com.lovai.lovaiapi.service.DeliveryService;
 import com.lovai.lovaiapi.service.NotificationService;
+import com.lovai.lovaiapi.service.MemoryService;
 import com.lovai.lovaiapi.repository.NotificationRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,9 @@ public class DatePlanController {
     
     @Autowired
     private NotificationRepository notificationRepository;
+    
+    @Autowired
+    private MemoryService memoryService;
     
     @PostMapping("/create")
     public ResponseEntity<DatePlanResponse> createDatePlan(@Valid @RequestBody DatePlanCreateRequest request) {
@@ -236,20 +240,57 @@ public class DatePlanController {
     
     @GetMapping("/statistics/last-month")
     public ResponseEntity<Map<String, Object>> getDatePlansCountInLastMonth(@RequestParam UUID coupleId) {
-        long count = datePlanService.countDatePlansInLastMonth(coupleId);
+        long datePlanCount = datePlanService.countDatePlansInLastMonth(coupleId);
+        long memoryCount = memoryService.countMemoriesInLastMonth(coupleId);
+        long memoryMediaCount = memoryService.countMemoryMediaInDateRange(
+                coupleId,
+                java.time.LocalDate.now().minusMonths(1),
+                java.time.LocalDate.now()
+        );
         return ResponseEntity.ok(Map.of(
             "coupleId", coupleId,
-            "count", count,
-            "period", "last_month"
+            "period", "last_month",
+            "datePlanCount", datePlanCount,
+            "memoryCount", memoryCount,
+            "memoryMediaCount", memoryMediaCount
         ));
     }
     
     @GetMapping("/statistics/total")
     public ResponseEntity<Map<String, Object>> getTotalDatePlansCount(@RequestParam UUID coupleId) {
-        long count = datePlanService.getTotalDatePlansCount(coupleId);
+        long datePlanCount = datePlanService.getTotalDatePlansCount(coupleId);
+        long memoryCount = memoryService.countMemoriesByCoupleId(coupleId);
+        long memoryMediaCount = memoryService.countMemoryMediaByCoupleId(coupleId);
         return ResponseEntity.ok(Map.of(
             "coupleId", coupleId,
-            "totalCount", count
+            "totalDatePlans", datePlanCount,
+            "totalMemories", memoryCount,
+            "totalMemoryMedia", memoryMediaCount
+        ));
+    }
+    
+    @GetMapping("/statistics/by-date-range")
+    public ResponseEntity<Map<String, Object>> getStatisticsByDateRange(
+            @RequestParam UUID coupleId,
+            @RequestParam java.time.LocalDate startDate,
+            @RequestParam java.time.LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "startDate must be before or equal to endDate"
+            ));
+        }
+        
+        long datePlanCount = datePlanService.countDatePlansInLastMonth(coupleId);
+        long memoryCount = memoryService.getMemoryStatistics(coupleId, startDate, endDate, null).getMemoriesInDateRange();
+        long memoryMediaCount = memoryService.countMemoryMediaInDateRange(coupleId, startDate, endDate);
+        
+        return ResponseEntity.ok(Map.of(
+                "coupleId", coupleId,
+                "startDate", startDate,
+                "endDate", endDate,
+                "datePlanCount", datePlanCount,
+                "memoryCount", memoryCount,
+                "memoryMediaCount", memoryMediaCount
         ));
     }
 }
